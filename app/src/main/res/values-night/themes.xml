@@ -3,5 +3,11 @@
     <style name="Base.Theme.MyGarden" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your dark theme here. -->
         <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+        <item name="android:windowBackground">@color/dark_brown</item>
+        <item name="colorOnSurface">@color/light_magenta</item>
+        <item name="colorPrimary">@color/light_magenta</item>
+        <item name="colorText">@color/white</item>
     </style>
+
+    <style name="Theme.MyGarden" parent="Base.Theme.MyGarden" />
 </resources>
