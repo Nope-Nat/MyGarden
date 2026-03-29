@@ -1,6 +1,8 @@
 package com.example.mygarden
 
+import android.content.Intent
 import android.os.Bundle
+import android.widget.Button
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -20,12 +22,10 @@ class SettingsActivity : AppCompatActivity() {
             insets
         }
 
-        // --- Obsługa trybu ciemnego --- //
+        // --- dark mode support --- //
         val themeSwitch: SwitchMaterial = findViewById(R.id.DarkModeSwitch)
         val sharedPref = getSharedPreferences("Settings", MODE_PRIVATE)
         val editor = sharedPref.edit()
-
-// Sprawdzamy zapisaną preferencję (domyślnie false - tryb jasny)
         val isDarkModeSaved = sharedPref.getBoolean("dark_mode_key", false)
         themeSwitch.isChecked = isDarkModeSaved
 
@@ -35,12 +35,11 @@ class SettingsActivity : AppCompatActivity() {
             } else {
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
             }
-            // Zapisujemy decyzję!
             editor.putBoolean("dark_mode_key", isChecked)
             editor.apply()
         }
 
-        // --- Obsługa dźwięku --- //
+        // --- disabling/enabling sound --- //
         val soundSwitch: SwitchMaterial = findViewById(R.id.SoundSwitch)
 
         val isSoundEnabled = sharedPref.getBoolean("sound_key", true)
@@ -48,6 +47,11 @@ class SettingsActivity : AppCompatActivity() {
         soundSwitch.setOnCheckedChangeListener { _, isChecked ->
             editor.putBoolean("sound_key", isChecked)
             editor.apply()
+        }
+        val button = findViewById<Button>(R.id.BackButton)
+        button.setOnClickListener {
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
         }
     }
 }
