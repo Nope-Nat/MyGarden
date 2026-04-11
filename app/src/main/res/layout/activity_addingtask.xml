@@ -36,7 +36,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
-        android:id="@+id/editTextName"
+        android:id="@+id/TaskName"
         android:layout_width="0dp"
         android:layout_height="60dp"
         android:layout_marginTop="32dp"
@@ -49,7 +49,7 @@
         app:layout_constraintTop_toBottomOf="@+id/textView2" />
 
     <EditText
-        android:id="@+id/editTextDescription"
+        android:id="@+id/TaskDescription"
         android:layout_width="0dp"
         android:layout_height="60dp"
         android:layout_marginTop="16dp"
@@ -59,10 +59,10 @@
         android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="@id/guidelineRight"
         app:layout_constraintStart_toStartOf="@id/guidelineLeft"
-        app:layout_constraintTop_toBottomOf="@+id/editTextName" />
+        app:layout_constraintTop_toBottomOf="@+id/TaskName" />
 
     <EditText
-        android:id="@+id/editTextDate"
+        android:id="@+id/TaskDueDate"
         android:layout_width="0dp"
         android:layout_height="60dp"
         android:layout_marginTop="16dp"
@@ -72,7 +72,7 @@
         android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="@id/guidelineRight"
         app:layout_constraintStart_toStartOf="@id/guidelineLeft"
-        app:layout_constraintTop_toBottomOf="@+id/editTextDescription" />
+        app:layout_constraintTop_toBottomOf="@+id/TaskDescription" />
 
     <Button
         android:id="@+id/AddButton"

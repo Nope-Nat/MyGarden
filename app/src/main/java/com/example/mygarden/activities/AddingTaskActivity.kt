@@ -1,35 +1,68 @@
 package com.example.mygarden.activities
 
-import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
-import androidx.activity.enableEdgeToEdge
+import android.widget.EditText
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
 import com.example.mygarden.R
+import com.example.mygarden.database.AppDatabase
+import com.example.mygarden.database.Task
+import kotlinx.coroutines.launch
+import java.util.regex.Pattern
 
 class AddingTaskActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContentView(R.layout.activity_addingtask)
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
+
+        val nameInput = findViewById<EditText>(R.id.TaskName)
+        val descInput = findViewById<EditText>(R.id.TaskDescription)
+        val dateInput = findViewById<EditText>(R.id.TaskDueDate)
+        val addButton = findViewById<Button>(R.id.AddButton)
+        val backButton = findViewById<Button>(R.id.BackButton)
+
+        addButton.setOnClickListener {
+            val name = nameInput.text.toString().trim()
+            val description = descInput.text.toString().trim()
+            val dueDate = dateInput.text.toString().trim()
+
+            if (validateInput(name, dueDate)) {
+                saveTask(name, description, dueDate)
+            }
         }
 
-        // --- going back to main --- //
-        val add_button = findViewById<Button>(R.id.AddButton)
-        add_button.setOnClickListener {
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
+        backButton.setOnClickListener { finish() }
+    }
+
+    private fun validateInput(name: String, date: String): Boolean {
+        if (name.isEmpty()) {
+            Toast.makeText(this, "Name is required", Toast.LENGTH_SHORT).show()
+            return false
         }
-        val back_button = findViewById<Button>(R.id.BackButton)
-        back_button.setOnClickListener {
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
+
+        // Regex for yyyy-mm-dd
+        val datePattern = Pattern.compile("^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$")
+        if (!datePattern.matcher(date).matches()) {
+            Toast.makeText(this, "Use format: yyyy-mm-dd", Toast.LENGTH_LONG).show()
+            return false
+        }
+        return true
+    }
+
+    private fun saveTask(name: String, description: String, date: String) {
+        val task = Task(name = name, description = description, dueDate = date)
+
+        lifecycleScope.launch {
+            try {
+                val db = AppDatabase.getDatabase(this@AddingTaskActivity)
+                db.taskDao().insertTask(task)
+                Toast.makeText(this@AddingTaskActivity, "Task saved!", Toast.LENGTH_SHORT).show()
+                finish()
+            } catch (e: Exception) {
+                Toast.makeText(this@AddingTaskActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 }

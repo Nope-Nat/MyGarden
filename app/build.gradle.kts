@@ -2,7 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.android)
-    id("com.google.devtools.ksp")
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -67,11 +67,7 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
     // -- database -- //
-    val room_version = "2.6.1"
-    implementation("androidx.room:room-runtime:$room_version")
-    implementation("androidx.room:room-ktx:$room_version")
-
-    // ZAMIAST KAPT UŻYWAMY KSP
-    // To rozwiązuje błąd "Metadata instance version 2.2.0"
-    ksp("androidx.room:room-compiler:$room_version")
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
 }
