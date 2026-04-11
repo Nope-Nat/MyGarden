@@ -1,4 +1,4 @@
-package com.example.mygarden
+package com.example.mygarden.activities
 
 import android.app.Application
 import androidx.appcompat.app.AppCompatDelegate
