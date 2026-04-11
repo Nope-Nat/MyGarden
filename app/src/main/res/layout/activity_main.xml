@@ -2,6 +2,7 @@
 <androidx.drawerlayout.widget.DrawerLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -25,6 +26,7 @@
             android:id="@+id/imageView2"
             android:layout_width="match_parent"
             android:layout_height="245dp"
+            android:scaleType="centerCrop"
             app:srcCompat="@drawable/intro" />
 
         <androidx.core.widget.NestedScrollView
@@ -39,17 +41,31 @@
                 android:padding="16dp">
 
                 <TextView
+                    android:id="@+id/welcomeTitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Welcome!"
+                    android:text="My Garden Tasks"
                     android:textSize="24sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:paddingBottom="8dp"/>
 
-                <TextView
+                <!-- The Scrollable List -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/tasksRecyclerView"
                     android:layout_width="match_parent"
-                    android:layout_height="2000dp"
-                    android:text="Here, someday, will be display of tasks. Till then, enjoy this plant."
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false"
+                    tools:listitem="@layout/item_task" />
+
+                <!-- Fallback text if list is empty (Optional) -->
+                <TextView
+                    android:id="@+id/emptyView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="No tasks yet. Add one from the menu!"
+                    android:visibility="gone"
                     android:paddingTop="20dp" />
+
             </LinearLayout>
         </androidx.core.widget.NestedScrollView>
 
