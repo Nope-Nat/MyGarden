@@ -3,7 +3,7 @@ package com.example.mygarden.activities
 import android.app.Application
 import androidx.appcompat.app.AppCompatDelegate
 
-class MyApplication : Application() {
+class MyGarden : Application() {
     override fun onCreate() {
         super.onCreate()
 

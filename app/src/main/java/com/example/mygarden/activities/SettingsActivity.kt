@@ -23,7 +23,7 @@ class SettingsActivity : AppCompatActivity() {
             insets
         }
 
-        // --- dark mode support --- //
+        // --- Dark Mode Support --- //
         val themeSwitch: SwitchMaterial = findViewById(R.id.DarkModeSwitch)
         val sharedPref = getSharedPreferences("Settings", MODE_PRIVATE)
         val editor = sharedPref.edit()
@@ -40,7 +40,7 @@ class SettingsActivity : AppCompatActivity() {
             editor.apply()
         }
 
-        // --- disabling/enabling sound --- //
+        // --- Disabling/Enabling Sound --- //
         val soundSwitch: SwitchMaterial = findViewById(R.id.SoundSwitch)
 
         val isSoundEnabled = sharedPref.getBoolean("sound_key", true)

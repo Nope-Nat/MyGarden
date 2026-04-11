@@ -2,7 +2,6 @@ package com.example.mygarden.activities
 
 import android.content.Intent
 import android.os.Bundle
-import androidx.activity.result.launch
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -11,9 +10,11 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mygarden.R
-import com.google.android.material.navigation.NavigationView
 import com.example.mygarden.database.AppDatabase
+import com.google.android.material.navigation.NavigationView
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainActivity : AppCompatActivity() {
 
@@ -25,9 +26,10 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // --- toolbar and drawer --- //
+        // --- Toolbar and Drawer Layout --- //
         val toolbar: Toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(toolbar)
+
         drawerLayout = findViewById(R.id.drawer_layout)
         val navView: NavigationView = findViewById(R.id.nav_view)
 
@@ -38,12 +40,18 @@ class MainActivity : AppCompatActivity() {
         drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
 
-        // --- recycler view --- //
+        // --- Recycler --- //
         recyclerView = findViewById(R.id.tasksRecyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
-        taskAdapter = TaskAdapter(emptyList())
+
+        taskAdapter = TaskAdapter(emptyList()) { selectedTask ->
+            val intent = Intent(this, DisplayingTaskActivity::class.java)
+            intent.putExtra("TASK_ID", selectedTask.id)
+            startActivity(intent)
+        }
         recyclerView.adapter = taskAdapter
 
+        // --- Navigation Drawer Menu --- //
         navView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.nav_add_task -> {
@@ -59,15 +67,19 @@ class MainActivity : AppCompatActivity() {
             true
         }
     }
+
     override fun onResume() {
         super.onResume()
         loadTasks()
     }
+
     private fun loadTasks() {
-        lifecycleScope.launch {
+        lifecycleScope.launch(Dispatchers.IO) {
             val db = AppDatabase.getDatabase(this@MainActivity)
             val tasks = db.taskDao().getAllTasks()
-            taskAdapter.updateTasks(tasks)
+            withContext(Dispatchers.Main) {
+                taskAdapter.updateTasks(tasks)
+            }
         }
     }
 }

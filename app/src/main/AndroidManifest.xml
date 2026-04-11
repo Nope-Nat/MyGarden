@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <application
-        android:name=".activities.MyApplication"
+        android:name=".activities.MyGarden"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -12,6 +12,9 @@
         android:roundIcon="@mipmap/new_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MyGarden">
+        <activity
+            android:name=".activities.DisplayingTaskActivity"
+            android:exported="false" />
         <activity
             android:name=".activities.MainActivity"
             android:exported="false" />
@@ -26,6 +29,7 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

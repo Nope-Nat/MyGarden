@@ -8,10 +8,14 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.mygarden.R
 import com.example.mygarden.database.Task
 
-class TaskAdapter(private var tasks: List<Task>) : RecyclerView.Adapter<TaskAdapter.TaskViewHolder>() {
+class TaskAdapter(
+    private var tasks: List<Task>,
+    private val onTaskClick: (Task) -> Unit
+) : RecyclerView.Adapter<TaskAdapter.TaskViewHolder>() {
 
     class TaskViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val nameText: TextView = view.findViewById(R.id.taskNameText)
+        val dateText: TextView = view.findViewById(R.id.taskDateText)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskViewHolder {
@@ -20,7 +24,18 @@ class TaskAdapter(private var tasks: List<Task>) : RecyclerView.Adapter<TaskAdap
     }
 
     override fun onBindViewHolder(holder: TaskViewHolder, position: Int) {
-        holder.nameText.text = tasks[position].name
+        val task = tasks[position]
+        holder.nameText.text = task.name
+
+        if (task.dueDate != null) {
+            holder.dateText.text = task.dueDate
+        } else {
+            holder.dateText.text = "-"
+        }
+
+        holder.itemView.setOnClickListener {
+            onTaskClick(task)
+        }
     }
 
     override fun getItemCount() = tasks.size

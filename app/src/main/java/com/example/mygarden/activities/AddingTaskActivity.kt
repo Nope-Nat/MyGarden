@@ -33,7 +33,9 @@ class AddingTaskActivity : AppCompatActivity() {
             }
         }
 
-        backButton.setOnClickListener { finish() }
+        backButton.setOnClickListener {
+            finish()
+        }
     }
 
     private fun validateInput(name: String, date: String): Boolean {
@@ -42,26 +44,38 @@ class AddingTaskActivity : AppCompatActivity() {
             return false
         }
 
-        // Regex for yyyy-mm-dd
         val datePattern = Pattern.compile("^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$")
-        if (!datePattern.matcher(date).matches()) {
+        if (!date.isEmpty() && !datePattern.matcher(date).matches()) {
             Toast.makeText(this, "Use format: yyyy-mm-dd", Toast.LENGTH_LONG).show()
             return false
         }
         return true
     }
+    private fun hideKeyboard() {
+        val view = this.currentFocus
+        if (view != null) {
+            val imm = getSystemService(INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
+            imm.hideSoftInputFromWindow(view.windowToken, 0)
+        }
+    }
 
     private fun saveTask(name: String, description: String, date: String) {
+        val date = if (date.isEmpty()) null else date
         val task = Task(name = name, description = description, dueDate = date)
 
-        lifecycleScope.launch {
+        lifecycleScope.launch(kotlinx.coroutines.Dispatchers.IO) {
             try {
                 val db = AppDatabase.getDatabase(this@AddingTaskActivity)
                 db.taskDao().insertTask(task)
-                Toast.makeText(this@AddingTaskActivity, "Task saved!", Toast.LENGTH_SHORT).show()
-                finish()
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                    Toast.makeText(this@AddingTaskActivity, "Task saved!", Toast.LENGTH_SHORT).show()
+                    hideKeyboard()
+                    finish()
+                }
             } catch (e: Exception) {
-                Toast.makeText(this@AddingTaskActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                    Toast.makeText(this@AddingTaskActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }

@@ -44,28 +44,18 @@
                     android:id="@+id/welcomeTitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="My Garden Tasks"
+                    android:text="My Current Tasks:"
                     android:textSize="24sp"
                     android:textStyle="bold"
                     android:paddingBottom="8dp"/>
 
-                <!-- The Scrollable List -->
+                <!-- List -->
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/tasksRecyclerView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:nestedScrollingEnabled="false"
                     tools:listitem="@layout/item_task" />
-
-                <!-- Fallback text if list is empty (Optional) -->
-                <TextView
-                    android:id="@+id/emptyView"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="No tasks yet. Add one from the menu!"
-                    android:visibility="gone"
-                    android:paddingTop="20dp" />
-
             </LinearLayout>
         </androidx.core.widget.NestedScrollView>
 

@@ -21,7 +21,7 @@ class StartActivity : AppCompatActivity() {
             insets
         }
 
-        // --- going to main screen --- //
+        // --- Going to Main --- //
         val button = findViewById<Button>(R.id.StartButton)
         button.setOnClickListener {
             val intent = Intent(this, MainActivity::class.java)
