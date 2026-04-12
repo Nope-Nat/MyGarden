@@ -9,7 +9,7 @@ import com.example.mygarden.R
 import com.example.mygarden.database.Task
 
 class TaskAdapter(
-    private var tasks: List<Task>,
+    private var tasks: List<Task>, private val dateSelector: (Task) -> String?,
     private val onTaskClick: (Task) -> Unit
 ) : RecyclerView.Adapter<TaskAdapter.TaskViewHolder>() {
 
@@ -27,8 +27,9 @@ class TaskAdapter(
         val task = tasks[position]
         holder.nameText.text = task.name
 
-        if (task.dueDate != null) {
-            holder.dateText.text = task.dueDate
+        val date =dateSelector(task)
+        if (date != null) {
+            holder.dateText.text = date
         } else {
             holder.dateText.text = "-"
         }

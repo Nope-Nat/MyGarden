@@ -10,5 +10,6 @@ data class Task(
     val name: String,
     val description: String?,
     val dueDate: String?,
+    var doneDate: String? = null,
     var done: Boolean = false
 )

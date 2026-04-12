@@ -11,18 +11,29 @@ interface TaskDao {
     suspend fun insertTask(task: Task)
 
     @Query("""
-    SELECT * FROM tasks 
-    WHERE done = false 
-    ORDER BY 
-        CASE 
-            WHEN dueDate IS NULL OR dueDate = '' THEN 1 
-            ELSE 0 
-    END ASC, dueDate ASC""")
-    suspend fun getAllTasks(): List<Task>
+        SELECT * FROM tasks 
+        WHERE done = false 
+        ORDER BY 
+            CASE 
+                WHEN dueDate IS NULL OR dueDate = '' THEN 1 
+                ELSE 0 
+        END ASC, dueDate ASC
+    """)
+    suspend fun getAllUndoneTasks(): List<Task>
+
+    @Query("""
+        SELECT * FROM tasks 
+        WHERE done = true 
+        ORDER BY doneDate ASC
+    """)
+    suspend fun getAllDoneTasks(): List<Task>
 
     @Query("SELECT * FROM tasks WHERE id = :needed_id")
     suspend fun getTaskById(needed_id: Int): Task?
 
     @Update
     suspend fun updateTask(task: Task)
+
+    @Query ("DELETE FROM tasks")
+    suspend fun clearTasks()
 }

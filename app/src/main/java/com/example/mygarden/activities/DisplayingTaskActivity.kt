@@ -1,11 +1,14 @@
 package com.example.mygarden.activities
 
+import android.annotation.SuppressLint
+import android.icu.text.SimpleDateFormat
 import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.ui.autofill.ContentDataType.Companion.Date
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
@@ -14,6 +17,9 @@ import com.example.mygarden.database.AppDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+import java.util.Date
 
 class DisplayingTaskActivity : AppCompatActivity() {
 
@@ -37,7 +43,7 @@ class DisplayingTaskActivity : AppCompatActivity() {
             finish()
         }
         findViewById<Button>(R.id.DoneButton).setOnClickListener {
-            markTaskDone(taskId)
+            changeTaskDoneUndone(taskId)
             finish()
         }
     }
@@ -56,16 +62,25 @@ class DisplayingTaskActivity : AppCompatActivity() {
             }
         }
     }
-    private fun markTaskDone(taskId: Int) {
+    @SuppressLint("SimpleDateFormat")
+    private fun changeTaskDoneUndone(taskId: Int) {
         lifecycleScope.launch(Dispatchers.IO) {
             val db = AppDatabase.getDatabase(this@DisplayingTaskActivity)
             val task = db.taskDao().getTaskById(taskId)
 
             task?.let {
-                it.done = true
+                if (it.done == true) {
+                    it.done = false
+                }
+                else {
+                    it.done = true
+                    val formatter = SimpleDateFormat("yyyy-MM-dd")
+                    val date = Date()
+                    it.doneDate = formatter.format(date).toString()
+                }
                 db.taskDao().updateTask(it)
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(this@DisplayingTaskActivity, "Task marked as done!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@DisplayingTaskActivity, "Changed status!", Toast.LENGTH_SHORT).show()
                     return@withContext
                 }
             }

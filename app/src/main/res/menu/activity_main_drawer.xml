@@ -12,5 +12,13 @@
             android:id="@+id/nav_settings"
             android:icon="@android:drawable/ic_menu_preferences"
             android:title="Go to settings" />
+        <item
+            android:id="@+id/nav_history"
+            android:icon="@android:drawable/ic_menu_recent_history"
+            android:title="Go to history"/>
+        <item
+            android:id="@+id/nav_main"
+            android:icon="@android:drawable/ic_menu_directions"
+            android:title="Go to main menu"/>
     </group>
 </menu>

@@ -16,7 +16,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class MainActivity : AppCompatActivity() {
+class HistoryActivity : AppCompatActivity() {
 
     private lateinit var drawerLayout: DrawerLayout
     private lateinit var taskAdapter: TaskAdapter
@@ -24,7 +24,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.activity_history)
 
         // --- Toolbar and Drawer Layout --- //
         val toolbar: Toolbar = findViewById(R.id.toolbar)
@@ -44,7 +44,7 @@ class MainActivity : AppCompatActivity() {
         recyclerView = findViewById(R.id.tasksRecyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
 
-        taskAdapter = TaskAdapter(emptyList(), {task -> task.dueDate}) { selectedTask ->
+        taskAdapter = TaskAdapter(emptyList(), {task -> task.doneDate}) { selectedTask ->
             val intent = Intent(this, DisplayingTaskActivity::class.java)
             intent.putExtra("TASK_ID", selectedTask.id)
             startActivity(intent)
@@ -83,8 +83,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun loadTasks() {
         lifecycleScope.launch(Dispatchers.IO) {
-            val db = AppDatabase.getDatabase(this@MainActivity)
-            val tasks = db.taskDao().getAllUndoneTasks()
+            val db = AppDatabase.getDatabase(this@HistoryActivity)
+            val tasks = db.taskDao().getAllDoneTasks()
             withContext(Dispatchers.Main) {
                 taskAdapter.updateTasks(tasks)
             }

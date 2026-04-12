@@ -13,6 +13,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MyGarden">
         <activity
+            android:name=".activities.HistoryActivity"
+            android:exported="false" />
+        <activity
             android:name=".activities.DisplayingTaskActivity"
             android:exported="false" />
         <activity
