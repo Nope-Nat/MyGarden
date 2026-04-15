@@ -20,10 +20,8 @@ class AddingTaskActivity : AppCompatActivity() {
         val nameInput = findViewById<EditText>(R.id.TaskName)
         val descInput = findViewById<EditText>(R.id.TaskDescription)
         val dateInput = findViewById<EditText>(R.id.TaskDueDate)
-        val addButton = findViewById<Button>(R.id.AddButton)
-        val backButton = findViewById<Button>(R.id.BackButton)
 
-        addButton.setOnClickListener {
+        findViewById<Button>(R.id.AddButton).setOnClickListener {
             val name = nameInput.text.toString().trim()
             val description = descInput.text.toString().trim()
             val dueDate = dateInput.text.toString().trim()
@@ -33,7 +31,7 @@ class AddingTaskActivity : AppCompatActivity() {
             }
         }
 
-        backButton.setOnClickListener {
+        findViewById<Button>(R.id.BackButton).setOnClickListener {
             finish()
         }
     }

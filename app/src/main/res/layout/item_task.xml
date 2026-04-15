@@ -35,7 +35,7 @@
             android:id="@+id/taskDateText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="-"
+            android:text="Due date/Done date"
             android:textSize="14sp"
             android:textColor="?attr/colorText"
             app:layout_constraintEnd_toEndOf="parent"

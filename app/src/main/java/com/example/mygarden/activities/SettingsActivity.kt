@@ -58,15 +58,13 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         // --- Back Button --- //
-        val button = findViewById<Button>(R.id.BackButton)
-        button.setOnClickListener {
+        findViewById<Button>(R.id.BackButton).setOnClickListener {
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
         }
 
         // --- Clearing Database --- //
-        val wipeDataButton = findViewById<Button>(R.id.WipeDataButton)
-        wipeDataButton.setOnClickListener {
+        findViewById<Button>(R.id.WipeDataButton).setOnClickListener {
             MaterialAlertDialogBuilder(this)
                 .setTitle("Confirm Deletion")
                 .setMessage("Are you sure you want to wipe all data? This cannot be undone.")
