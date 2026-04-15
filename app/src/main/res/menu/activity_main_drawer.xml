@@ -19,6 +19,6 @@
         <item
             android:id="@+id/nav_main"
             android:icon="@android:drawable/ic_menu_directions"
-            android:title="Go to main menu"/>
+            android:title="Back to main menu"/>
     </group>
 </menu>

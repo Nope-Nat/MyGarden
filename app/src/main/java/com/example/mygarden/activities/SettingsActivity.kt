@@ -37,13 +37,21 @@ class SettingsActivity : AppCompatActivity() {
         themeSwitch.isChecked = isDarkModeSaved
 
         themeSwitch.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) {
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+            editor.putBoolean("dark_mode_key", isChecked).apply()
+
+            val darkMode = if (isChecked) {
+                AppCompatDelegate.MODE_NIGHT_YES
             } else {
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+                AppCompatDelegate.MODE_NIGHT_NO
             }
-            editor.putBoolean("dark_mode_key", isChecked)
-            editor.apply()
+
+            if (AppCompatDelegate.getDefaultNightMode() != darkMode) {
+                AppCompatDelegate.setDefaultNightMode(darkMode)
+                val intent = intent
+                finish()
+                startActivity(intent)
+                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+            }
         }
 
         // --- Disabling/Enabling Sound --- //
