@@ -119,7 +119,7 @@ class AddingTaskActivity : AppCompatActivity() {
         }
     private fun createImageUri() : Uri? {
         return try {
-            val directory = File(cacheDir, "camera_image").apply {mkdirs()}
+            val directory = File(cacheDir, "camera_images").apply {mkdirs()}
             val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
             val fileName = "MG_${timeStamp}.jpg"
             val file = File(directory, fileName)
