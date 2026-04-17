@@ -3,12 +3,13 @@ package com.example.mygarden.activities
 import android.annotation.SuppressLint
 import android.icu.text.SimpleDateFormat
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import android.widget.ImageView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.ui.autofill.ContentDataType.Companion.Date
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
@@ -17,9 +18,8 @@ import com.example.mygarden.database.AppDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.time.LocalTime
-import java.time.format.DateTimeFormatter
 import java.util.Date
+import androidx.core.net.toUri
 
 class DisplayingTaskActivity : AppCompatActivity() {
 
@@ -58,6 +58,15 @@ class DisplayingTaskActivity : AppCompatActivity() {
                     findViewById<TextView>(R.id.displayTaskName).text = loadedTask.name
                     findViewById<TextView>(R.id.displayTaskDescription).text = loadedTask.description
                     findViewById<TextView>(R.id.displayTaskDate).text = loadedTask.dueDate
+
+                    val photoView=findViewById<ImageView>(R.id.displayTaskPhoto)
+                    if (loadedTask.photo != null) {
+                        photoView.visibility = View.VISIBLE
+                        photoView.setImageURI(loadedTask.photo.toUri())
+                    }
+                    else {
+                        photoView.visibility = View.GONE
+                    }
                 }
             }
         }

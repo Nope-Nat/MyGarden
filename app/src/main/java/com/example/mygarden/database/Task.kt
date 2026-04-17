@@ -11,5 +11,6 @@ data class Task(
     val description: String?,
     val dueDate: String?,
     var doneDate: String? = null,
-    var done: Boolean = false
+    var done: Boolean = false,
+    val photo: String? = null
 )
