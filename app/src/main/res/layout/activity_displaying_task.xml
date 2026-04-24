@@ -64,17 +64,6 @@
         app:layout_constraintStart_toStartOf="@id/guidelineLeft"
         app:layout_constraintTop_toBottomOf="@id/displayTaskDate" />
 
-    <ImageView
-        android:id="@+id/displayTaskPhoto"
-        android:layout_width="0dp"
-        android:layout_height="250dp"
-        android:layout_marginTop="24dp"
-        android:visibility="gone"
-        android:scaleType="centerCrop"
-        app:layout_constraintEnd_toEndOf="@id/guidelineRight"
-        app:layout_constraintStart_toStartOf="@id/guidelineLeft"
-        app:layout_constraintTop_toBottomOf="@id/displayTaskDescription" />
-
     <Button
         android:id="@+id/BackButton"
         android:layout_width="wrap_content"
@@ -97,5 +86,39 @@
         app:layout_constraintBottom_toTopOf="@+id/BackButton"
         app:layout_constraintEnd_toEndOf="@id/guidelineRight"
         app:layout_constraintStart_toStartOf="@id/guidelineLeft" />
+    <TextView
+        android:id="@+id/displayTaskAddress"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Location"
+        android:textColor="?attr/colorPrimary"
+        android:textStyle="bold"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="@id/guidelineRight"
+        app:layout_constraintStart_toStartOf="@id/guidelineLeft"
+        app:layout_constraintTop_toBottomOf="@id/displayTaskDescription" />
+
+    <TextView
+        android:id="@+id/displayTaskCoords"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Lat: 0.0, Lon: 0.0"
+        android:textSize="12sp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="@id/guidelineRight"
+        app:layout_constraintStart_toStartOf="@id/guidelineLeft"
+        app:layout_constraintTop_toBottomOf="@id/displayTaskAddress" />
+
+    <ImageView
+        android:id="@+id/displayTaskPhoto"
+        android:layout_width="0dp"
+        android:layout_height="250dp"
+        android:layout_marginTop="16dp"
+        android:scaleType="centerCrop"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="@id/guidelineRight"
+        app:layout_constraintStart_toStartOf="@id/guidelineLeft"
+        app:layout_constraintTop_toBottomOf="@id/displayTaskCoords" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

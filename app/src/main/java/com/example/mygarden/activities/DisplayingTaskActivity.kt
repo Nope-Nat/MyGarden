@@ -1,15 +1,22 @@
 package com.example.mygarden.activities
 
+import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Context
+import android.content.pm.PackageManager
 import android.icu.text.SimpleDateFormat
+import android.location.Location
+import android.location.LocationManager
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
-import android.widget.ImageView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
@@ -19,7 +26,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Date
-import androidx.core.net.toUri
 
 class DisplayingTaskActivity : AppCompatActivity() {
 
@@ -42,9 +48,9 @@ class DisplayingTaskActivity : AppCompatActivity() {
         findViewById<Button>(R.id.BackButton).setOnClickListener {
             finish()
         }
+
         findViewById<Button>(R.id.DoneButton).setOnClickListener {
             changeTaskDoneUndone(taskId)
-            finish()
         }
     }
 
@@ -59,7 +65,23 @@ class DisplayingTaskActivity : AppCompatActivity() {
                     findViewById<TextView>(R.id.displayTaskDescription).text = loadedTask.description
                     findViewById<TextView>(R.id.displayTaskDate).text = loadedTask.dueDate
 
-                    val photoView=findViewById<ImageView>(R.id.displayTaskPhoto)
+                    val addrView = findViewById<TextView>(R.id.displayTaskAddress)
+                    val coordView = findViewById<TextView>(R.id.displayTaskCoords)
+
+                    if (!loadedTask.address.isNullOrEmpty()) {
+                        addrView.visibility = View.VISIBLE
+                        addrView.text = "📍 ${loadedTask.address}"
+
+                        if (loadedTask.latitude != null && loadedTask.longitude != null) {
+                            coordView.visibility = View.VISIBLE
+                            coordView.text = "Coordinates: ${loadedTask.latitude}, ${loadedTask.longitude}"
+                        }
+                    } else {
+                        addrView.visibility = View.GONE
+                        coordView.visibility = View.GONE
+                    }
+
+                    val photoView = findViewById<ImageView>(R.id.displayTaskPhoto)
                     if (loadedTask.photo != null) {
                         photoView.visibility = View.VISIBLE
                         photoView.setImageURI(loadedTask.photo.toUri())
@@ -71,6 +93,7 @@ class DisplayingTaskActivity : AppCompatActivity() {
             }
         }
     }
+
     @SuppressLint("SimpleDateFormat")
     private fun changeTaskDoneUndone(taskId: Int) {
         lifecycleScope.launch(Dispatchers.IO) {
@@ -80,17 +103,63 @@ class DisplayingTaskActivity : AppCompatActivity() {
             task?.let {
                 if (it.done == true) {
                     it.done = false
+                    it.doneDate = null
+
+                    db.taskDao().updateTask(it)
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(this@DisplayingTaskActivity, "Changed to undone!", Toast.LENGTH_SHORT).show()
+                        finish()
+                    }
+                    return@launch
                 }
-                else {
-                    it.done = true
-                    val formatter = SimpleDateFormat("yyyy-MM-dd")
-                    val date = Date()
-                    it.doneDate = formatter.format(date).toString()
+
+                if (it.latitude != null && it.longitude != null) {
+                    val hasPermission = ActivityCompat.checkSelfPermission(
+                        this@DisplayingTaskActivity,
+                        Manifest.permission.ACCESS_FINE_LOCATION
+                    ) == PackageManager.PERMISSION_GRANTED
+
+                    if (!hasPermission) {
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(this@DisplayingTaskActivity, "Permit location!", Toast.LENGTH_SHORT).show()
+                        }
+                        return@launch
+                    }
+
+                    val locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
+                    val lastLoc = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+                        ?: locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+
+                    if (lastLoc != null) {
+                        val results = FloatArray(1)
+                        Location.distanceBetween(
+                            lastLoc.latitude, lastLoc.longitude,
+                            it.latitude, it.longitude,
+                            results
+                        )
+                        val distanceInMeters = results[0]
+
+                        if (distanceInMeters > 500) {
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(this@DisplayingTaskActivity, "Too far (${distanceInMeters.toInt()}m), stop lying!", Toast.LENGTH_LONG).show()
+                            }
+                            return@launch
+                        }
+                    } else {
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(this@DisplayingTaskActivity, "Unable to check location, check GPS.", Toast.LENGTH_LONG).show()
+                        }
+                        return@launch
+                    }
                 }
+
+                it.done = true
+                val formatter = SimpleDateFormat("yyyy-MM-dd")
+                it.doneDate = formatter.format(Date()).toString()
                 db.taskDao().updateTask(it)
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(this@DisplayingTaskActivity, "Changed status!", Toast.LENGTH_SHORT).show()
-                    return@withContext
+                    Toast.makeText(this@DisplayingTaskActivity, "Task done!", Toast.LENGTH_SHORT).show()
+                    finish()
                 }
             }
         }

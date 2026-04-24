@@ -1,10 +1,13 @@
 package com.example.mygarden.activities
 
+import android.annotation.SuppressLint
+import android.app.DatePickerDialog
 import android.net.Uri
 import android.os.Bundle
-import android.widget.Button
-import android.widget.EditText
-import android.widget.Toast
+import android.text.Editable
+import android.text.TextWatcher
+import android.view.View
+import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
@@ -12,14 +15,24 @@ import androidx.lifecycle.lifecycleScope
 import com.example.mygarden.R
 import com.example.mygarden.database.AppDatabase
 import com.example.mygarden.database.Task
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
+import org.json.JSONObject
 import java.io.File
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-import java.util.regex.Pattern
+import java.net.URL
+import java.util.*
 
 class AddingTaskActivity : AppCompatActivity() {
+
+    private var currentPhotoUri: Uri? = null
+    private var savedPhotoPath: String? = null
+    private var searchJob: Job? = null
+    private val locationDataMap = mutableMapOf<String, Pair<Double, Double>>()
+    private lateinit var locationAdapter: ArrayAdapter<String>
+
+    private var selectedLat: Double? = null
+    private var selectedLon: Double? = null
+
+    @SuppressLint("DefaultLocale")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_addingtask)
@@ -27,106 +40,192 @@ class AddingTaskActivity : AppCompatActivity() {
         val nameInput = findViewById<EditText>(R.id.TaskName)
         val descInput = findViewById<EditText>(R.id.TaskDescription)
         val dateInput = findViewById<EditText>(R.id.TaskDueDate)
+        val locationInput = findViewById<AutoCompleteTextView>(R.id.TaskLocation)
+        val photoPreview = findViewById<ImageView>(R.id.PhotoPreview)
+
+        // --- CALLENDAR --- //
+        dateInput.setOnClickListener {
+            val c = Calendar.getInstance()
+            DatePickerDialog(this, { _, y, m, d ->
+                dateInput.setText(String.format("%04d-%02d-%02d", y, m + 1, d))
+            }, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)).show()
+        }
+
+        // --- FINDING LOCATION --- //
+        locationAdapter = ArrayAdapter(this, R.layout.item_location_suggestion, android.R.id.text1, mutableListOf())
+        locationInput.setAdapter(locationAdapter)
+
+        locationInput.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                val query = s.toString()
+                if (query.length < 3) return
+                searchJob?.cancel()
+                searchJob = lifecycleScope.launch {
+                    delay(300)
+                    fetchPhotonData(query, locationInput)
+                }
+            }
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                selectedLat = null
+                selectedLon = null
+            }
+        })
+        locationInput.setOnItemClickListener { parent, _, position, _ ->
+            val selection = parent.getItemAtPosition(position) as String
+            val coords = locationDataMap[selection]
+            selectedLat = coords?.first
+            selectedLon = coords?.second
+        }
+
+        // --- CAMERA --- //
+        val takePicture = registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+            if (success) {
+                savedPhotoPath = currentPhotoUri.toString()
+                photoPreview.visibility = View.VISIBLE
+                photoPreview.setImageURI(currentPhotoUri)
+            }
+        }
+        findViewById<Button>(R.id.PhotoButton).setOnClickListener {
+            createImageUri()?.let { uri ->
+                currentPhotoUri = uri
+                takePicture.launch(uri)
+            }
+        }
 
         findViewById<Button>(R.id.AddButton).setOnClickListener {
             val name = nameInput.text.toString().trim()
-            val description = descInput.text.toString().trim()
-            val dueDate = dateInput.text.toString().trim()
+            val address = locationInput.text.toString().trim()
+            val desc = descInput.text.toString()
+            val date = dateInput.text.toString()
 
-            if (validateInput(name, dueDate)) {
-                saveTask(name, description, dueDate, savedPhotoPath)
+            if (name.isEmpty()) {
+                Toast.makeText(this, "Name is required", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            lifecycleScope.launch {
+                var finalLat = selectedLat
+                var finalLon = selectedLon
+
+                // --- WHAT IF ADDRESS WAS WRITTEN BUT NOT CHOSEN FROM THE PROPOSITIONS? --- ///
+                if (address.isNotEmpty() && (finalLat == null || finalLon == null)) {
+                    val cached = locationDataMap[address]
+                    if (cached != null) {
+                        finalLat = cached.first
+                        finalLon = cached.second
+                    } else {
+                        val coords = fetchCoordsDirectly(address)
+                        if (coords != null) {
+                            finalLat = coords.first
+                            finalLon = coords.second
+                        }
+                    }
+                }
+                saveTask(name, desc, date, savedPhotoPath, address, finalLat, finalLon)
             }
         }
-
         findViewById<Button>(R.id.BackButton).setOnClickListener {
             finish()
         }
-        findViewById<Button>(R.id.PhotoButton).setOnClickListener {
-            val uri=createImageUri()
-            if (uri!=null){
-                currentPhotoUri=uri
-                takePictureLauncher.launch(uri)
-            } else {
-                Toast.makeText(this, "Error while creating file", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun saveTask(name: String, desc: String, date: String, photo: String?, addr: String, lat: Double?, lon: Double?) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            val task = Task(name = name, description = desc, dueDate = date, photo = photo,
+                address = addr, latitude = lat, longitude = lon)
+
+            lifecycleScope.launch(Dispatchers.IO) {
+                try {
+                    val db = AppDatabase.getDatabase(this@AddingTaskActivity)
+                    db.taskDao().insertTask(task)
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(this@AddingTaskActivity, "Saved!", Toast.LENGTH_SHORT)
+                            .show()
+                        finish()
+                    }
+                } catch (e: Exception) {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(
+                            this@AddingTaskActivity,
+                            "Error: ${e.message}",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
             }
         }
     }
 
-    private fun validateInput(name: String, date: String): Boolean {
-        if (name.isEmpty()) {
-            Toast.makeText(this, "Name is required", Toast.LENGTH_SHORT).show()
-            return false
-        }
-
-        val datePattern = Pattern.compile("^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$")
-        if (!date.isEmpty() && !datePattern.matcher(date).matches()) {
-            Toast.makeText(this, "Use format: yyyy-mm-dd", Toast.LENGTH_LONG).show()
-            return false
-        }
-        return true
-    }
-
-    private fun hideKeyboard() {
-        val view = this.currentFocus
-        if (view != null) {
-            val imm =
-                getSystemService(INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
-            imm.hideSoftInputFromWindow(view.windowToken, 0)
-        }
-    }
-
-    private fun saveTask(name: String, description: String, date: String, photoPath: String?) {
-        val date = if (date.isEmpty()) null else date
-        val task = Task(name = name, description = description, dueDate = date, photo = photoPath)
-
-        lifecycleScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+    // --- LOCATION --- //
+    private suspend fun fetchPhotonData(query: String, view: AutoCompleteTextView) {
+        withContext(Dispatchers.IO) {
             try {
-                val db = AppDatabase.getDatabase(this@AddingTaskActivity)
-                db.taskDao().insertTask(task)
-                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
-                    Toast.makeText(this@AddingTaskActivity, "Task saved!", Toast.LENGTH_SHORT)
-                        .show()
-                    hideKeyboard()
-                    finish()
+                val response = URL("https://photon.komoot.io/api/?q=${java.net.URLEncoder.encode(query, "UTF-8")}&limit=5").readText()
+                val json = JSONObject(response)
+                val features = json.getJSONArray("features")
+                val results = mutableListOf<String>()
+
+                locationDataMap.clear()
+                for (i in 0 until features.length()) {
+                    val obj = features.getJSONObject(i)
+                    val prop = obj.getJSONObject("properties")
+                    val geom = obj.getJSONObject("geometry").getJSONArray("coordinates")
+
+                    val name = if(prop.has("name")) prop.getString("name") else ""
+                    val street = if(prop.has("street")) prop.getString("street") else ""
+                    val houseNum = if(prop.has("housenumber")) prop.getString("housenumber") else ""
+                    val city = if(prop.has("city")) prop.getString("city") else ""
+
+                    val addressParts = mutableListOf<String>()
+                    if (name.isNotEmpty()) addressParts.add(name)
+                    if (street.isNotEmpty()) addressParts.add(street)
+                    if (houseNum.isNotEmpty()) addressParts.add(houseNum)
+                    if (city.isNotEmpty()) addressParts.add(city)
+
+                    val label = addressParts.joinToString(", ")
+
+                    if (label.isNotEmpty() && !results.contains(label)) {
+                        results.add(label)
+                        locationDataMap[label] = Pair(geom.getDouble(1), geom.getDouble(0))
+                    }
+                }
+
+                withContext(Dispatchers.Main) {
+                    locationAdapter.clear()
+                    locationAdapter.addAll(results)
+                    locationAdapter.notifyDataSetChanged()
+                    if (results.isNotEmpty() && view.hasFocus()) {
+                        view.showDropDown()
+                    }
+                }
+            } catch (e: Exception) { e.printStackTrace() }
+        }
+    }
+    private suspend fun fetchCoordsDirectly(address: String): Pair<Double, Double>? {
+        return withContext(Dispatchers.IO) {
+            try {
+                val encoded = java.net.URLEncoder.encode(address, "UTF-8")
+                val response =
+                    URL("https://photon.komoot.io/api/?q=$encoded&limit=1").readText()
+                val json = JSONObject(response)
+                val features = json.getJSONArray("features")
+                if (features.length() > 0) {
+                    val geom = features.getJSONObject(0).getJSONObject("geometry")
+                        .getJSONArray("coordinates")
+                    return@withContext Pair(geom.getDouble(1), geom.getDouble(0))
                 }
             } catch (e: Exception) {
-                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
-                    Toast.makeText(
-                        this@AddingTaskActivity,
-                        "Error: ${e.message}",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
+                e.printStackTrace()
             }
+            null
         }
     }
 
-    // --- PHOTO --- //
-    private var currentPhotoUri: Uri? = null
-    private var savedPhotoPath: String? = null
-
-    private val takePictureLauncher =
-        registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
-            if (success){
-                savedPhotoPath = currentPhotoUri.toString()
-                Toast.makeText(this, "Photo saved", Toast.LENGTH_SHORT).show()
-            }
-            else {
-                Toast.makeText(this, "Error", Toast.LENGTH_SHORT).show()
-                currentPhotoUri = null
-                savedPhotoPath = null
-            }
-        }
-    private fun createImageUri() : Uri? {
-        return try {
-            val directory = File(cacheDir, "camera_images").apply {mkdirs()}
-            val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
-            val fileName = "MG_${timeStamp}.jpg"
-            val file = File(directory, fileName)
-            FileProvider.getUriForFile(this, "${packageName}.provider", file)
-        } catch (e: Exception){
-            e.printStackTrace()
-            null
-        }
+    // --- PHOTOS --- //
+    private fun createImageUri(): Uri? {
+        val file = File(cacheDir, "camera_images").apply { mkdirs() }
+            .let { File(it, "IMG_${System.currentTimeMillis()}.jpg") }
+        return FileProvider.getUriForFile(this, "${packageName}.provider", file)
     }
 }
