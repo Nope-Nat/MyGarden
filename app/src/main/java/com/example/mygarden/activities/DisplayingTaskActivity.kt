@@ -27,7 +27,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Date
 
-class DisplayingTaskActivity : AppCompatActivity() {
+class DisplayingTaskActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,8 +62,24 @@ class DisplayingTaskActivity : AppCompatActivity() {
             withContext(Dispatchers.Main) {
                 task?.let { loadedTask ->
                     findViewById<TextView>(R.id.displayTaskName).text = loadedTask.name
-                    findViewById<TextView>(R.id.displayTaskDescription).text = loadedTask.description
-                    findViewById<TextView>(R.id.displayTaskDate).text = loadedTask.dueDate
+
+                    val descriptionView=findViewById<TextView>(R.id.displayTaskDescription)
+                    descriptionView.text = loadedTask.description
+                    if (!loadedTask.description.isNullOrEmpty()) {
+                        descriptionView.visibility = View.VISIBLE
+                    }
+                    else {
+                        descriptionView.visibility = View.GONE
+                    }
+
+                    val dateView=findViewById<TextView>(R.id.displayTaskDate)
+                    dateView.text = loadedTask.dueDate
+                    if (!loadedTask.dueDate.isNullOrEmpty()) {
+                        dateView.visibility = View.VISIBLE
+                    }
+                    else {
+                        dateView.visibility = View.GONE
+                    }
 
                     val addrView = findViewById<TextView>(R.id.displayTaskAddress)
                     val coordView = findViewById<TextView>(R.id.displayTaskCoords)
@@ -81,13 +97,52 @@ class DisplayingTaskActivity : AppCompatActivity() {
                         coordView.visibility = View.GONE
                     }
 
+                    val photoHeaderView = findViewById<TextView>(R.id.displayTaskPhotoHeader)
                     val photoView = findViewById<ImageView>(R.id.displayTaskPhoto)
-                    if (loadedTask.photo != null) {
-                        photoView.visibility = View.VISIBLE
+
+                    if (!loadedTask.photo.isNullOrEmpty()) {
+                        photoHeaderView.visibility = View.VISIBLE
                         photoView.setImageURI(loadedTask.photo.toUri())
-                    }
-                    else {
+
                         photoView.visibility = View.GONE
+                        var isPhotoVisible = false
+                        photoHeaderView.setOnClickListener {
+                            isPhotoVisible = !isPhotoVisible
+                            if (isPhotoVisible) {
+                                photoView.visibility = View.VISIBLE
+                                photoHeaderView.text = "Hide Photo"
+                            } else {
+                                photoView.visibility = View.GONE
+                                photoHeaderView.text = "Show Photo"
+                            }
+                        }
+                    } else {
+                        photoHeaderView.visibility = View.GONE
+                        photoView.visibility = View.GONE
+                    }
+
+                    val handwrittenHeaderView = findViewById<TextView>(R.id.displayTaskHandwrittenHeader)
+                    val handwrittenView = findViewById<ImageView>(R.id.displayTaskHandwritten)
+
+                    if (!loadedTask.handwrittenPhoto.isNullOrEmpty()) {
+                        handwrittenHeaderView.visibility = View.VISIBLE
+                        handwrittenView.setImageURI(loadedTask.handwrittenPhoto.toUri())
+
+                        handwrittenView.visibility = View.GONE
+                        var isPhotoVisible = false
+                        handwrittenHeaderView.setOnClickListener {
+                            isPhotoVisible = !isPhotoVisible
+                            if (isPhotoVisible) {
+                                handwrittenView.visibility = View.VISIBLE
+                                handwrittenHeaderView.text = "Hide Handwritten Note"
+                            } else {
+                                handwrittenView.visibility = View.GONE
+                                handwrittenHeaderView.text = "Show Handwritten Note"
+                            }
+                        }
+                    } else {
+                        handwrittenHeaderView.visibility = View.GONE
+                        handwrittenView.visibility = View.GONE
                     }
                 }
             }

@@ -1,7 +1,9 @@
 package com.example.mygarden.activities
 
 import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.app.DatePickerDialog
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
@@ -21,17 +23,7 @@ import java.io.File
 import java.net.URL
 import java.util.*
 
-class AddingTaskActivity : AppCompatActivity() {
-
-    private var currentPhotoUri: Uri? = null
-    private var savedPhotoPath: String? = null
-    private var searchJob: Job? = null
-    private val locationDataMap = mutableMapOf<String, Pair<Double, Double>>()
-    private lateinit var locationAdapter: ArrayAdapter<String>
-
-    private var selectedLat: Double? = null
-    private var selectedLon: Double? = null
-
+class AddingTaskActivity : BaseActivity() {
     @SuppressLint("DefaultLocale")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,7 +35,7 @@ class AddingTaskActivity : AppCompatActivity() {
         val locationInput = findViewById<AutoCompleteTextView>(R.id.TaskLocation)
         val photoPreview = findViewById<ImageView>(R.id.PhotoPreview)
 
-        // --- CALLENDAR --- //
+        // --- CALENDAR --- //
         dateInput.setOnClickListener {
             val c = Calendar.getInstance()
             DatePickerDialog(this, { _, y, m, d ->
@@ -93,6 +85,13 @@ class AddingTaskActivity : AppCompatActivity() {
             }
         }
 
+        // --- TOUCHPAD ---
+        findViewById<Button>(R.id.HandwrittenButton).setOnClickListener {
+            showDrawingDialog()
+        }
+
+
+        // --- NAVIGATION BUTTONS --- //
         findViewById<Button>(R.id.AddButton).setOnClickListener {
             val name = nameInput.text.toString().trim()
             val address = locationInput.text.toString().trim()
@@ -122,7 +121,7 @@ class AddingTaskActivity : AppCompatActivity() {
                         }
                     }
                 }
-                saveTask(name, desc, date, savedPhotoPath, address, finalLat, finalLon)
+                saveTask(name, desc, date, savedPhotoPath, currentHandwritingPath, address, finalLat, finalLon)
             }
         }
         findViewById<Button>(R.id.BackButton).setOnClickListener {
@@ -130,9 +129,9 @@ class AddingTaskActivity : AppCompatActivity() {
         }
     }
 
-    private fun saveTask(name: String, desc: String, date: String, photo: String?, addr: String, lat: Double?, lon: Double?) {
+    private fun saveTask(name: String, desc: String, date: String, photo: String?, handwrtt: String?, addr: String, lat: Double?, lon: Double?) {
         lifecycleScope.launch(Dispatchers.IO) {
-            val task = Task(name = name, description = desc, dueDate = date, photo = photo,
+            val task = Task(name = name, description = desc, dueDate = date, photo = photo, handwrittenPhoto = handwrtt,
                 address = addr, latitude = lat, longitude = lon)
 
             lifecycleScope.launch(Dispatchers.IO) {
@@ -158,6 +157,12 @@ class AddingTaskActivity : AppCompatActivity() {
     }
 
     // --- LOCATION --- //
+    private var searchJob: Job? = null
+    private val locationDataMap = mutableMapOf<String, Pair<Double, Double>>()
+    private lateinit var locationAdapter: ArrayAdapter<String>
+
+    private var selectedLat: Double? = null
+    private var selectedLon: Double? = null
     private suspend fun fetchPhotonData(query: String, view: AutoCompleteTextView) {
         withContext(Dispatchers.IO) {
             try {
@@ -223,9 +228,53 @@ class AddingTaskActivity : AppCompatActivity() {
     }
 
     // --- PHOTOS --- //
+    private var currentPhotoUri: Uri? = null
+    private var savedPhotoPath: String? = null
     private fun createImageUri(): Uri? {
         val file = File(cacheDir, "camera_images").apply { mkdirs() }
-            .let { File(it, "IMG_${System.currentTimeMillis()}.jpg") }
+            .let { File(it, "MG_${System.currentTimeMillis()}.jpg") }
         return FileProvider.getUriForFile(this, "${packageName}.provider", file)
+    }
+
+    // --- TOUCHPAD --- //
+    private var currentHandwritingPath: String? = null
+    private fun saveBitmapAsPng(bitmap: Bitmap): String? {
+        val fileName = "MG_HANDWRITTEN_${System.currentTimeMillis()}.png"
+        val file = File(filesDir, fileName)
+        return try {
+            val out = java.io.FileOutputStream(file)
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+            out.flush()
+            out.close()
+            file.absolutePath
+        } catch (e: Exception) {
+            null
+        }
+    }
+    private fun showDrawingDialog() {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_drawing, null)
+        val drawingView = dialogView.findViewById<DrawingView>(R.id.dialogDrawingView)
+        val btnClear = dialogView.findViewById<Button>(R.id.btnDialogClear)
+        val btnSave = dialogView.findViewById<Button>(R.id.btnDialogSave)
+
+        val dialog = AlertDialog.Builder(this).setView(dialogView)
+            .setCancelable(true).create()
+
+        btnClear.setOnClickListener {
+            drawingView.clear()
+        }
+
+        btnSave.setOnClickListener {
+            val path = saveBitmapAsPng(drawingView.getBitmap())
+            if (path != null) {
+                currentHandwritingPath = path
+                Toast.makeText(this, "Saved!", Toast.LENGTH_SHORT).show()
+            }
+            val hwPreview = findViewById<ImageView>(R.id.HandwrittenPreview)
+            hwPreview.visibility = View.VISIBLE
+            hwPreview.setImageBitmap(drawingView.getBitmap())
+            dialog.dismiss()
+        }
+        dialog.show()
     }
 }

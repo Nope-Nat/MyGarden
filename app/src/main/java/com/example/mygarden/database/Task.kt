@@ -13,6 +13,7 @@ data class Task(
     var doneDate: String? = null,
     var done: Boolean = false,
     val photo: String? = null,
+    val handwrittenPhoto: String? = null,
     val address: String? = null,
     val latitude: Double? = null,
     val longitude: Double? = null
