@@ -5,49 +5,51 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-
     tools:context=".activities.StartActivity">
 
     <ImageView
         android:id="@+id/imageView"
         android:layout_width="170dp"
         android:layout_height="174dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:contentDescription="App Logo"
+        app:layout_constraintBottom_toTopOf="@+id/App_Name"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.33"
+        app:layout_constraintVertical_chainStyle="packed"
+        app:layout_constraintVertical_bias="0.60"
         app:srcCompat="@drawable/intro" />
 
     <TextView
         android:id="@+id/App_Name"
-        android:layout_width="407dp"
-        android:layout_height="87dp"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
         android:text="MyGarden"
         android:textAlignment="center"
-        android:textSize="60dp"
-        android:textStyle="bold"
         android:textColor="?attr/colorOnSurface"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:textSize="60sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/StartButton"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageView"
-        app:layout_constraintVertical_bias="0.115" />
+        app:layout_constraintTop_toBottomOf="@+id/imageView" />
 
     <Button
         android:id="@+id/StartButton"
-        android:layout_width="184dp"
-        android:layout_height="87dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:paddingStart="40dp"
+        android:paddingEnd="40dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp"
         android:text="START"
-        android:textSize="35dp"
         android:textColor="?attr/colorText"
+        android:textSize="30sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/App_Name"
-        app:layout_constraintVertical_bias="0.198" />
+        app:layout_constraintTop_toBottomOf="@+id/App_Name" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

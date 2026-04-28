@@ -32,8 +32,6 @@ class AddingTaskActivity : BaseActivity() {
         val nameInput = findViewById<EditText>(R.id.TaskName)
         val descInput = findViewById<EditText>(R.id.TaskDescription)
         val dateInput = findViewById<EditText>(R.id.TaskDueDate)
-        val locationInput = findViewById<AutoCompleteTextView>(R.id.TaskLocation)
-        val photoPreview = findViewById<ImageView>(R.id.PhotoPreview)
 
         // --- CALENDAR --- //
         dateInput.setOnClickListener {
@@ -44,6 +42,7 @@ class AddingTaskActivity : BaseActivity() {
         }
 
         // --- FINDING LOCATION --- //
+        val locationInput = findViewById<AutoCompleteTextView>(R.id.TaskLocation)
         locationAdapter = ArrayAdapter(this, R.layout.item_location_suggestion, android.R.id.text1, mutableListOf())
         locationInput.setAdapter(locationAdapter)
 
@@ -71,14 +70,17 @@ class AddingTaskActivity : BaseActivity() {
         }
 
         // --- CAMERA --- //
+        val photoPreview = findViewById<ImageView>(R.id.PhotoPreview)
+        val photoButton = findViewById<Button>(R.id.PhotoButton)
         val takePicture = registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
             if (success) {
                 savedPhotoPath = currentPhotoUri.toString()
                 photoPreview.visibility = View.VISIBLE
                 photoPreview.setImageURI(currentPhotoUri)
+                photoButton.visibility = View.GONE
             }
         }
-        findViewById<Button>(R.id.PhotoButton).setOnClickListener {
+        photoButton.setOnClickListener {
             createImageUri()?.let { uri ->
                 currentPhotoUri = uri
                 takePicture.launch(uri)
@@ -256,6 +258,16 @@ class AddingTaskActivity : BaseActivity() {
         val drawingView = dialogView.findViewById<DrawingView>(R.id.dialogDrawingView)
         val btnClear = dialogView.findViewById<Button>(R.id.btnDialogClear)
         val btnSave = dialogView.findViewById<Button>(R.id.btnDialogSave)
+        val btnUndo = dialogView.findViewById<Button>(R.id.btnDialogUndo)
+        val btnRedo = dialogView.findViewById<Button>(R.id.btnDialogRedo)
+
+        btnUndo.setOnClickListener {
+            drawingView.undo()
+        }
+
+        btnRedo.setOnClickListener {
+            drawingView.redo()
+        }
 
         val dialog = AlertDialog.Builder(this).setView(dialogView)
             .setCancelable(true).create()
@@ -273,6 +285,8 @@ class AddingTaskActivity : BaseActivity() {
             val hwPreview = findViewById<ImageView>(R.id.HandwrittenPreview)
             hwPreview.visibility = View.VISIBLE
             hwPreview.setImageBitmap(drawingView.getBitmap())
+            val hwButton = findViewById<Button>(R.id.HandwrittenButton)
+            hwButton.visibility = View.GONE
             dialog.dismiss()
         }
         dialog.show()

@@ -68,17 +68,11 @@ class DisplayingTaskActivity : BaseActivity() {
                     if (!loadedTask.description.isNullOrEmpty()) {
                         descriptionView.visibility = View.VISIBLE
                     }
-                    else {
-                        descriptionView.visibility = View.GONE
-                    }
 
                     val dateView=findViewById<TextView>(R.id.displayTaskDate)
                     dateView.text = loadedTask.dueDate
                     if (!loadedTask.dueDate.isNullOrEmpty()) {
                         dateView.visibility = View.VISIBLE
-                    }
-                    else {
-                        dateView.visibility = View.GONE
                     }
 
                     val addrView = findViewById<TextView>(R.id.displayTaskAddress)
@@ -92,9 +86,6 @@ class DisplayingTaskActivity : BaseActivity() {
                             coordView.visibility = View.VISIBLE
                             coordView.text = "Coordinates: ${loadedTask.latitude}, ${loadedTask.longitude}"
                         }
-                    } else {
-                        addrView.visibility = View.GONE
-                        coordView.visibility = View.GONE
                     }
 
                     val photoHeaderView = findViewById<TextView>(R.id.displayTaskPhotoHeader)
@@ -140,9 +131,6 @@ class DisplayingTaskActivity : BaseActivity() {
                                 handwrittenHeaderView.text = "Show Handwritten Note"
                             }
                         }
-                    } else {
-                        handwrittenHeaderView.visibility = View.GONE
-                        handwrittenView.visibility = View.GONE
                     }
                 }
             }

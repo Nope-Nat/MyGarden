@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp">
 
@@ -14,17 +15,54 @@
         android:textColor="?attr/colorOnSurface"
         android:layout_marginBottom="8dp" />
 
-    <com.example.mygarden.activities.DrawingView
-        android:id="@+id/dialogDrawingView"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="607dp"
-        android:background="#F0F0F0" />
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <com.example.mygarden.activities.DrawingView
+            android:id="@+id/dialogDrawingView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#F0F0F0" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentStart="true"
+            android:orientation="horizontal"
+            android:layout_margin="8dp">
+
+            <Button
+                android:id="@+id/btnDialogUndo"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minWidth="0dp"
+                app:icon="@drawable/undo_arrow"
+                app:iconSize="24dp"
+                app:iconPadding="0dp" />
+
+            <Button
+                android:id="@+id/btnDialogRedo"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:minWidth="0dp"
+                app:icon="@drawable/redo_arrow"
+                app:iconSize="24dp"
+                app:iconPadding="0dp" />
+        </LinearLayout>
+
+    </RelativeLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="end"
+        android:gravity="end|center_vertical"
         android:layout_marginTop="8dp">
 
         <Button

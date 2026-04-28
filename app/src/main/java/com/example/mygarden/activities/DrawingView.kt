@@ -13,6 +13,8 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
     private var canvasPaint: Paint = Paint(Paint.DITHER_FLAG)
     private lateinit var drawCanvas: Canvas
     private lateinit var canvasBitmap: Bitmap
+    private val paths = mutableListOf<Path>()
+    private val undonePaths = mutableListOf<Path>()
 
     init {
         val typedValue = android.util.TypedValue()
@@ -42,22 +44,44 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
         val touchY = event.y
 
         when (event.action) {
-            MotionEvent.ACTION_DOWN -> drawPath.moveTo(touchX, touchY)
+            MotionEvent.ACTION_DOWN -> {
+                drawPath.moveTo(touchX, touchY)
+                undonePaths.clear()
+            }
             MotionEvent.ACTION_MOVE -> drawPath.lineTo(touchX, touchY)
             MotionEvent.ACTION_UP -> {
-                drawCanvas.drawPath(drawPath, drawPaint)
+                paths.add(Path(drawPath))
                 drawPath.reset()
+                redrawCanvas()
             }
             else -> return false
         }
         invalidate()
         return true
     }
-
-    fun getBitmap(): Bitmap = canvasBitmap
-
-    fun clear() {
-        drawCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
+    private fun redrawCanvas() {
+        canvasBitmap.eraseColor(Color.TRANSPARENT)
+        for (path in paths) {
+            drawCanvas.drawPath(path, drawPaint)
+        }
         invalidate()
+    }
+    fun undo() {
+        if (paths.isNotEmpty()) {
+            undonePaths.add(paths.removeAt(paths.lastIndex))
+            redrawCanvas()
+        }
+    }
+    fun redo() {
+        if (undonePaths.isNotEmpty()) {
+            paths.add(undonePaths.removeAt(undonePaths.lastIndex))
+            redrawCanvas()
+        }
+    }
+    fun getBitmap(): Bitmap = canvasBitmap
+    fun clear() {
+        paths.clear()
+        undonePaths.clear()
+        redrawCanvas()
     }
 }
