@@ -2,11 +2,11 @@ package com.example.mygarden.activities
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.pm.PackageManager
 import android.icu.text.SimpleDateFormat
 import android.location.Location
 import android.location.LocationManager
+import android.media.MediaPlayer
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
@@ -14,7 +14,6 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
@@ -188,7 +187,7 @@ class DisplayingTaskActivity : BaseActivity() {
                         )
                         val distanceInMeters = results[0]
 
-                        if (distanceInMeters > 500) {
+                        if (distanceInMeters > 50000) {
                             withContext(Dispatchers.Main) {
                                 Toast.makeText(this@DisplayingTaskActivity, "Too far (${distanceInMeters.toInt()}m), stop lying!", Toast.LENGTH_LONG).show()
                             }
@@ -206,11 +205,21 @@ class DisplayingTaskActivity : BaseActivity() {
                 val formatter = SimpleDateFormat("yyyy-MM-dd")
                 it.doneDate = formatter.format(Date()).toString()
                 db.taskDao().updateTask(it)
+                playDoneSound()
                 withContext(Dispatchers.Main) {
                     Toast.makeText(this@DisplayingTaskActivity, "Task done!", Toast.LENGTH_SHORT).show()
                     finish()
                 }
             }
         }
+    }
+
+    // --- SPEAKER --- //
+    private fun playDoneSound() {
+        val mediaPlayer = MediaPlayer.create(this, R.raw.done_sound_effect)
+        mediaPlayer.setOnCompletionListener {
+            it.release()
+        }
+        mediaPlayer.start()
     }
 }
