@@ -75,6 +75,12 @@ class DisplayingTaskActivity : BaseActivity() {
                         dateView.visibility = View.VISIBLE
                     }
 
+                    val waterView = findViewById<TextView>(R.id.displayWaterPoints)
+                    if (loadedTask.waterPoints != null && loadedTask.waterPoints > 0) {
+                        waterView.text = "💧 ${loadedTask.waterPoints}"
+                        waterView.visibility = View.VISIBLE
+                    }
+
                     val addrView = findViewById<TextView>(R.id.displayTaskAddress)
                     val coordView = findViewById<TextView>(R.id.displayTaskCoords)
 

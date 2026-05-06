@@ -16,5 +16,6 @@ data class Task(
     val handwrittenPhoto: String? = null,
     val address: String? = null,
     val latitude: Double? = null,
-    val longitude: Double? = null
+    val longitude: Double? = null,
+    val waterPoints: Int? = null
 )

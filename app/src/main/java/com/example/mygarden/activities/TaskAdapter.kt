@@ -1,5 +1,6 @@
 package com.example.mygarden.activities
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,6 +17,7 @@ class TaskAdapter(
     class TaskViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val nameText: TextView = view.findViewById(R.id.taskNameText)
         val dateText: TextView = view.findViewById(R.id.taskDateText)
+        val waterText: TextView = view.findViewById(R.id.taskWaterPoints)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskViewHolder {
@@ -23,6 +25,7 @@ class TaskAdapter(
         return TaskViewHolder(view)
     }
 
+    @SuppressLint("SetTextI18n")
     override fun onBindViewHolder(holder: TaskViewHolder, position: Int) {
         val task = tasks[position]
         holder.nameText.text = task.name
@@ -30,10 +33,14 @@ class TaskAdapter(
         val date =dateSelector(task)
         if (date != null) {
             holder.dateText.text = date
-        } else {
-            holder.dateText.text = "-"
+            holder.dateText.visibility = View.VISIBLE
         }
-
+        if (task.waterPoints != null) {
+            holder.waterText.text = "\uD83D\uDCA7 "+task.waterPoints.toString()
+            holder.waterText.visibility = View.VISIBLE
+        } else {
+            holder.waterText.visibility = View.GONE
+        }
         holder.itemView.setOnClickListener {
             onTaskClick(task)
         }
@@ -41,6 +48,7 @@ class TaskAdapter(
 
     override fun getItemCount() = tasks.size
 
+    @SuppressLint("NotifyDataSetChanged")
     fun updateTasks(newTasks: List<Task>) {
         tasks = newTasks
         notifyDataSetChanged()

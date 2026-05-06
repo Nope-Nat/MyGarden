@@ -89,6 +89,34 @@
                 android:dropDownWidth="match_parent"
                 android:hint="Location" />
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="💧"
+                    android:textSize="24sp"
+                    android:layout_marginEnd="8dp" />
+
+                <SeekBar
+                    android:id="@+id/seekBar"
+                    style="@style/Widget.AppCompat.SeekBar.Discrete"
+                    android:layout_width="0dp"
+                    android:layout_height="34dp"
+                    android:layout_weight="1"
+                    android:tickMarkTint="?attr/colorOnSurface"
+                    android:progressTint="?attr/colorPrimary"
+                    android:progressBackgroundTint="?attr/colorPrimary"
+                    android:thumbTint="?attr/colorPrimary"
+                    android:max="7"
+                    android:progress="0" />
+            </LinearLayout>
+
             <ImageView
                 android:id="@+id/PhotoPreview"
                 android:layout_width="120dp"

@@ -17,14 +17,14 @@ interface TaskDao {
             CASE 
                 WHEN dueDate IS NULL OR dueDate = '' THEN 1 
                 ELSE 0 
-        END ASC, dueDate ASC
+        END ASC, waterPoints DESC
     """)
     suspend fun getAllUndoneTasks(): List<Task>
 
     @Query("""
         SELECT * FROM tasks 
         WHERE done = true 
-        ORDER BY doneDate ASC
+        ORDER BY doneDate
     """)
     suspend fun getAllDoneTasks(): List<Task>
 

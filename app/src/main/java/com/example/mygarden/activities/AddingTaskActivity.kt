@@ -123,7 +123,13 @@ class AddingTaskActivity : BaseActivity() {
                         }
                     }
                 }
-                saveTask(name, desc, date, savedPhotoPath, currentHandwritingPath, address, finalLat, finalLon)
+
+                // --- WATER POINTS --- //
+                val seekBar = findViewById<SeekBar>(R.id.seekBar)
+                val waterPoints = if (seekBar.progress == 0) null else seekBar.progress
+
+
+                saveTask(name, desc, date, savedPhotoPath, currentHandwritingPath, address, finalLat, finalLon, waterPoints)
             }
         }
         findViewById<Button>(R.id.BackButton).setOnClickListener {
@@ -131,10 +137,10 @@ class AddingTaskActivity : BaseActivity() {
         }
     }
 
-    private fun saveTask(name: String, desc: String, date: String, photo: String?, handwrtt: String?, addr: String, lat: Double?, lon: Double?) {
+    private fun saveTask(name: String, desc: String, date: String, photo: String?, handwrtt: String?, addr: String, lat: Double?, lon: Double?, water: Int?) {
         lifecycleScope.launch(Dispatchers.IO) {
             val task = Task(name = name, description = desc, dueDate = date, photo = photo, handwrittenPhoto = handwrtt,
-                address = addr, latitude = lat, longitude = lon)
+                address = addr, latitude = lat, longitude = lon, waterPoints = water)
 
             lifecycleScope.launch(Dispatchers.IO) {
                 try {

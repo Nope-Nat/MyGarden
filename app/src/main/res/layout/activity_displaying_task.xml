@@ -90,6 +90,20 @@
                 app:layout_constraintEnd_toEndOf="@id/guidelineRight"
                 app:layout_constraintStart_toStartOf="@id/guidelineLeft"
                 app:layout_constraintTop_toTopOf="parent" />
+            <TextView
+                android:id="@+id/displayWaterPoints"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:gravity="center"
+                android:text="Water Points"
+                android:textColor="?attr/colorOnSurface"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="@id/guidelineRight"
+                app:layout_constraintStart_toStartOf="@id/guidelineLeft"
+                app:layout_constraintTop_toBottomOf="@id/displayTaskDate"/>
 
             <TextView
                 android:id="@+id/displayTaskDescription"
@@ -103,7 +117,7 @@
                 android:visibility="gone"
                 app:layout_constraintEnd_toEndOf="@id/guidelineRight"
                 app:layout_constraintStart_toStartOf="@id/guidelineLeft"
-                app:layout_constraintTop_toBottomOf="@id/displayTaskDate" />
+                app:layout_constraintTop_toBottomOf="@id/displayWaterPoints" />
 
             <TextView
                 android:id="@+id/displayTaskAddress"
