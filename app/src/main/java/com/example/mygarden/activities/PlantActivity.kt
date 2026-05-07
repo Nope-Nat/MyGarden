@@ -1,19 +1,15 @@
 package com.example.mygarden.activities
 
+import android.animation.ObjectAnimator
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Button
+import android.widget.ProgressBar
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.widget.Toolbar
 import androidx.drawerlayout.widget.DrawerLayout
-import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.example.mygarden.R
-import com.example.mygarden.database.AppDatabase
 import com.google.android.material.navigation.NavigationView
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class PlantActivity : BaseActivity() {
 
@@ -23,7 +19,11 @@ class PlantActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_plant)
 
-        // --- Toolbar and Drawer Layout --- //
+        setupDrawerAndToolbar()
+        setupPlantLogic()
+    }
+
+    private fun setupDrawerAndToolbar() {
         val toolbar: Toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(toolbar)
 
@@ -37,7 +37,7 @@ class PlantActivity : BaseActivity() {
         drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
 
-        // --- Navigation Drawer Menu --- //
+        // --- Nawigation Drawer Menu --- //
         navView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.nav_add_task -> {
@@ -59,7 +59,18 @@ class PlantActivity : BaseActivity() {
         }
     }
 
-    override fun onResume() {
-        super.onResume()
+    private fun setupPlantLogic() {
+        val waterButton = findViewById<Button>(R.id.waterButton)
+        val progressBar = findViewById<ProgressBar>(R.id.progressBar)
+
+        waterButton.setOnClickListener {
+            val currentProgress = progressBar.progress
+
+            val newProgress = if (currentProgress >= 100) 0 else currentProgress + 10
+            ObjectAnimator.ofInt(progressBar, "progress", newProgress).apply {
+                duration = 300
+                start()
+            }
+        }
     }
 }

@@ -11,4 +11,6 @@
     <color name="dark_brown">#2A1E04</color>
     <color name="dark_magenta">#7C244E</color>
     <color name="light_magenta">#975172</color>
+    <color name="light_blue">#6EB2FF</color>
+    <color name="dark_blue">#0B305D</color>
 </resources>

@@ -7,6 +7,7 @@
         <item name="colorOnSurface">@color/dark_magenta</item>
         <item name="colorPrimary">@color/light_magenta</item>
         <item name="colorText">@color/white</item>
+        <item name="waterColor">@color/dark_blue</item>
     </style>
 
     <style name="Theme.MyGarden" parent="Base.Theme.MyGarden" />
