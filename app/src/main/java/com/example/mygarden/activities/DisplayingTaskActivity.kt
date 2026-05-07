@@ -16,6 +16,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
@@ -29,7 +30,7 @@ import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.util.Date
 
-class DisplayingTaskActivity : BaseActivity() {
+class DisplayingTaskActivity : AppCompatActivity() {
 
     // --- STATE VARIABLES --- //
     private var voiceNotePlayer: MediaPlayer? = null

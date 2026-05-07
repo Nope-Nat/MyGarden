@@ -11,6 +11,7 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.asLiveData
@@ -23,7 +24,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import com.example.mygarden.plants.PlantDataManager
 
-class PlantActivity : BaseActivity() {
+class PlantActivity : AppCompatActivity() {
     private lateinit var drawerLayout: DrawerLayout
     private val db by lazy { AppDatabase.getDatabase(this) }
     private lateinit var plantManager: PlantDataManager
