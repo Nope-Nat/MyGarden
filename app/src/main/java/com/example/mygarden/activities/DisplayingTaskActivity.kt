@@ -28,31 +28,54 @@ import java.util.Date
 
 class DisplayingTaskActivity : BaseActivity() {
 
+    // --- STATE VARIABLES --- //
+    private var voiceNotePlayer: MediaPlayer? = null
+    private var doneSoundPlayer: MediaPlayer? = null
+
+    // --- LIFECYCLE --- //
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_displaying_task)
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
+        setupWindowInsets()
+        setupListeners()
 
         val taskId = intent.getIntExtra("TASK_ID", -1)
         if (taskId != -1) {
             loadTaskDetails(taskId)
         }
+    }
+    override fun onStop() {
+        super.onStop()
+        voiceNotePlayer?.release()
+        voiceNotePlayer = null
 
+        doneSoundPlayer?.release()
+        doneSoundPlayer = null
+    }
+
+    // --- SETUP METHODS --- //
+    private fun setupWindowInsets() {
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
+    }
+    private fun setupListeners() {
         findViewById<Button>(R.id.BackButton).setOnClickListener {
             finish()
         }
 
         findViewById<Button>(R.id.DoneButton).setOnClickListener {
-            changeTaskDoneUndone(taskId)
+            val taskId = intent.getIntExtra("TASK_ID", -1)
+            if (taskId != -1) {
+                changeTaskDoneUndone(taskId)
+            }
         }
     }
-
+    // --- LOGIC METHODS --- //
     private fun loadTaskDetails(taskId: Int) {
         lifecycleScope.launch(Dispatchers.IO) {
             val db = AppDatabase.getDatabase(this@DisplayingTaskActivity)
@@ -62,24 +85,23 @@ class DisplayingTaskActivity : BaseActivity() {
                 task?.let { loadedTask ->
                     findViewById<TextView>(R.id.displayTaskName).text = loadedTask.name
 
-                    val descriptionView=findViewById<TextView>(R.id.displayTaskDescription)
+                    val descriptionView = findViewById<TextView>(R.id.displayTaskDescription)
                     descriptionView.text = loadedTask.description
-                    if (!loadedTask.description.isNullOrEmpty()) {
-                        descriptionView.visibility = View.VISIBLE
-                    }
+                    descriptionView.visibility = if (!loadedTask.description.isNullOrEmpty()) View.VISIBLE else View.GONE
 
-                    val dateView=findViewById<TextView>(R.id.displayTaskDate)
+                    val dateView = findViewById<TextView>(R.id.displayTaskDate)
                     dateView.text = loadedTask.dueDate
-                    if (!loadedTask.dueDate.isNullOrEmpty()) {
-                        dateView.visibility = View.VISIBLE
-                    }
+                    dateView.visibility = if (!loadedTask.dueDate.isNullOrEmpty()) View.VISIBLE else View.GONE
 
                     val waterView = findViewById<TextView>(R.id.displayWaterPoints)
                     if (loadedTask.waterPoints != null && loadedTask.waterPoints > 0) {
                         waterView.text = "💧 ${loadedTask.waterPoints}"
                         waterView.visibility = View.VISIBLE
+                    } else {
+                        waterView.visibility = View.GONE
                     }
 
+                    // --- LOCATION --- //
                     val addrView = findViewById<TextView>(R.id.displayTaskAddress)
                     val coordView = findViewById<TextView>(R.id.displayTaskCoords)
 
@@ -90,52 +112,64 @@ class DisplayingTaskActivity : BaseActivity() {
                         if (loadedTask.latitude != null && loadedTask.longitude != null) {
                             coordView.visibility = View.VISIBLE
                             coordView.text = "Coordinates: ${loadedTask.latitude}, ${loadedTask.longitude}"
+                        } else {
+                            coordView.visibility = View.GONE
                         }
+                    } else {
+                        addrView.visibility = View.GONE
+                        coordView.visibility = View.GONE
                     }
 
+                    // --- PHOTO --- //
                     val photoHeaderView = findViewById<TextView>(R.id.displayTaskPhotoHeader)
                     val photoView = findViewById<ImageView>(R.id.displayTaskPhoto)
 
                     if (!loadedTask.photo.isNullOrEmpty()) {
                         photoHeaderView.visibility = View.VISIBLE
                         photoView.setImageURI(loadedTask.photo.toUri())
-
                         photoView.visibility = View.GONE
+
                         var isPhotoVisible = false
                         photoHeaderView.setOnClickListener {
                             isPhotoVisible = !isPhotoVisible
-                            if (isPhotoVisible) {
-                                photoView.visibility = View.VISIBLE
-                                photoHeaderView.text = "Hide Photo"
-                            } else {
-                                photoView.visibility = View.GONE
-                                photoHeaderView.text = "Show Photo"
-                            }
+                            photoView.visibility = if (isPhotoVisible) View.VISIBLE else View.GONE
+                            photoHeaderView.text = if (isPhotoVisible) "Hide Photo" else "Show Photo"
                         }
                     } else {
                         photoHeaderView.visibility = View.GONE
                         photoView.visibility = View.GONE
                     }
 
+                    // --- HANDWRITTEN NOTE --- //
                     val handwrittenHeaderView = findViewById<TextView>(R.id.displayTaskHandwrittenHeader)
                     val handwrittenView = findViewById<ImageView>(R.id.displayTaskHandwritten)
 
                     if (!loadedTask.handwrittenPhoto.isNullOrEmpty()) {
                         handwrittenHeaderView.visibility = View.VISIBLE
                         handwrittenView.setImageURI(loadedTask.handwrittenPhoto.toUri())
-
                         handwrittenView.visibility = View.GONE
-                        var isPhotoVisible = false
+
+                        var isHwVisible = false
                         handwrittenHeaderView.setOnClickListener {
-                            isPhotoVisible = !isPhotoVisible
-                            if (isPhotoVisible) {
-                                handwrittenView.visibility = View.VISIBLE
-                                handwrittenHeaderView.text = "Hide Handwritten Note"
-                            } else {
-                                handwrittenView.visibility = View.GONE
-                                handwrittenHeaderView.text = "Show Handwritten Note"
-                            }
+                            isHwVisible = !isHwVisible
+                            handwrittenView.visibility = if (isHwVisible) View.VISIBLE else View.GONE
+                            handwrittenHeaderView.text = if (isHwVisible) "Hide Handwritten Note" else "Show Handwritten Note"
                         }
+                    } else {
+                        handwrittenHeaderView.visibility = View.GONE
+                        handwrittenView.visibility = View.GONE
+                    }
+
+                    // --- VOICE NOTE --- //
+                    val voiceNoteButton = findViewById<TextView>(R.id.displayVoiceNoteButton)
+
+                    if (!loadedTask.voiceNote.isNullOrEmpty()) {
+                        voiceNoteButton.visibility = View.VISIBLE
+                        voiceNoteButton.setOnClickListener {
+                            playVoiceNote(loadedTask.voiceNote, voiceNoteButton)
+                        }
+                    } else {
+                        voiceNoteButton.visibility = View.GONE
                     }
                 }
             }
@@ -148,12 +182,13 @@ class DisplayingTaskActivity : BaseActivity() {
             val db = AppDatabase.getDatabase(this@DisplayingTaskActivity)
             val task = db.taskDao().getTaskById(taskId)
 
-            task?.let {
-                if (it.done == true) {
-                    it.done = false
-                    it.doneDate = null
+            task?.let { loadedTask ->
+                // --- REVERT TO UNDONE --- //
+                if (loadedTask.done) {
+                    loadedTask.done = false
+                    loadedTask.doneDate = null
+                    db.taskDao().updateTask(loadedTask)
 
-                    db.taskDao().updateTask(it)
                     withContext(Dispatchers.Main) {
                         Toast.makeText(this@DisplayingTaskActivity, "Changed to undone!", Toast.LENGTH_SHORT).show()
                         finish()
@@ -161,52 +196,22 @@ class DisplayingTaskActivity : BaseActivity() {
                     return@launch
                 }
 
-                if (it.latitude != null && it.longitude != null) {
-                    val hasPermission = ActivityCompat.checkSelfPermission(
-                        this@DisplayingTaskActivity,
-                        Manifest.permission.ACCESS_FINE_LOCATION
-                    ) == PackageManager.PERMISSION_GRANTED
+                // --- LOCATION VALIDATION --- //
+                if (loadedTask.latitude != null && loadedTask.longitude != null) {
+                    val isLocationValid = validateLocation(loadedTask.latitude, loadedTask.longitude)
 
-                    if (!hasPermission) {
-                        withContext(Dispatchers.Main) {
-                            Toast.makeText(this@DisplayingTaskActivity, "Permit location!", Toast.LENGTH_SHORT).show()
-                        }
-                        return@launch
-                    }
-
-                    val locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
-                    val lastLoc = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-                        ?: locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
-
-                    if (lastLoc != null) {
-                        val results = FloatArray(1)
-                        Location.distanceBetween(
-                            lastLoc.latitude, lastLoc.longitude,
-                            it.latitude, it.longitude,
-                            results
-                        )
-                        val distanceInMeters = results[0]
-
-                        if (distanceInMeters > 50000) {
-                            withContext(Dispatchers.Main) {
-                                Toast.makeText(this@DisplayingTaskActivity, "Too far (${distanceInMeters.toInt()}m), stop lying!", Toast.LENGTH_LONG).show()
-                            }
-                            return@launch
-                        }
-                    } else {
-                        withContext(Dispatchers.Main) {
-                            Toast.makeText(this@DisplayingTaskActivity, "Unable to check location, check GPS.", Toast.LENGTH_LONG).show()
-                        }
+                    if (!isLocationValid) {
                         return@launch
                     }
                 }
-
-                it.done = true
+                // --- MARK AS DONE --- //
+                loadedTask.done = true
                 val formatter = SimpleDateFormat("yyyy-MM-dd")
-                it.doneDate = formatter.format(Date()).toString()
-                db.taskDao().updateTask(it)
-                playDoneSound()
+                loadedTask.doneDate = formatter.format(Date()).toString()
+                db.taskDao().updateTask(loadedTask)
+
                 withContext(Dispatchers.Main) {
+                    playDoneSound()
                     Toast.makeText(this@DisplayingTaskActivity, "Task done!", Toast.LENGTH_SHORT).show()
                     finish()
                 }
@@ -214,12 +219,77 @@ class DisplayingTaskActivity : BaseActivity() {
         }
     }
 
-    // --- SPEAKER --- //
-    private fun playDoneSound() {
-        val mediaPlayer = MediaPlayer.create(this, R.raw.done_sound_effect)
-        mediaPlayer.setOnCompletionListener {
-            it.release()
+    // --- EXTRAS --- //
+    private suspend fun validateLocation(taskLatitude: Double, taskLongitude: Double): Boolean {
+        val hasPermission = ActivityCompat.checkSelfPermission(this@DisplayingTaskActivity,
+            Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+
+        if (!hasPermission) {
+            withContext(Dispatchers.Main) {
+                Toast.makeText(this@DisplayingTaskActivity, "Permit location!", Toast.LENGTH_SHORT).show()
+            }
+            return false
         }
-        mediaPlayer.start()
+
+        val locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
+        val lastLoc = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+            ?: locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+
+        if (lastLoc != null) {
+            val results = FloatArray(1)
+            Location.distanceBetween(
+                lastLoc.latitude, lastLoc.longitude,
+                taskLatitude, taskLongitude,
+                results
+            )
+            val distanceInMeters = results[0]
+
+            if (distanceInMeters > 50000) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@DisplayingTaskActivity, "Too far (${distanceInMeters.toInt()}m), stop lying!", Toast.LENGTH_LONG).show()
+                }
+                return false
+            }
+        } else {
+            withContext(Dispatchers.Main) {
+                Toast.makeText(this@DisplayingTaskActivity, "Unable to check location, check GPS.", Toast.LENGTH_LONG).show()
+            }
+            return false
+        }
+        return true
+    }
+
+    private fun playDoneSound() {
+        doneSoundPlayer = MediaPlayer.create(this, R.raw.done_sound_effect)
+        doneSoundPlayer?.setOnCompletionListener {
+            it.release()
+            doneSoundPlayer = null
+        }
+        doneSoundPlayer?.start()
+    }
+
+    private fun playVoiceNote(path: String, button: TextView) {
+        if (voiceNotePlayer?.isPlaying == true) return
+
+        voiceNotePlayer = MediaPlayer().apply {
+            try {
+                setDataSource(path)
+                prepare()
+                start()
+
+                button.isEnabled = false
+                button.text = "Playing..."
+
+                setOnCompletionListener {
+                    release()
+                    voiceNotePlayer = null
+                    button.isEnabled = true
+                    button.text = "Play Voice Note"
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(this@DisplayingTaskActivity, "Error playing audio", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 }
