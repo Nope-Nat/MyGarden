@@ -7,6 +7,7 @@ import android.icu.text.SimpleDateFormat
 import android.location.Location
 import android.location.LocationManager
 import android.media.MediaPlayer
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
@@ -14,6 +15,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
@@ -24,15 +26,16 @@ import com.example.mygarden.database.AppDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.time.LocalDate
 import java.util.Date
 
 class DisplayingTaskActivity : BaseActivity() {
 
     // --- STATE VARIABLES --- //
     private var voiceNotePlayer: MediaPlayer? = null
-    private var doneSoundPlayer: MediaPlayer? = null
 
     // --- LIFECYCLE --- //
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -46,13 +49,11 @@ class DisplayingTaskActivity : BaseActivity() {
             loadTaskDetails(taskId)
         }
     }
+
     override fun onStop() {
         super.onStop()
         voiceNotePlayer?.release()
         voiceNotePlayer = null
-
-        doneSoundPlayer?.release()
-        doneSoundPlayer = null
     }
 
     // --- SETUP METHODS --- //
@@ -63,6 +64,8 @@ class DisplayingTaskActivity : BaseActivity() {
             insets
         }
     }
+
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun setupListeners() {
         findViewById<Button>(R.id.BackButton).setOnClickListener {
             finish()
@@ -75,6 +78,7 @@ class DisplayingTaskActivity : BaseActivity() {
             }
         }
     }
+
     // --- LOGIC METHODS --- //
     private fun loadTaskDetails(taskId: Int) {
         lifecycleScope.launch(Dispatchers.IO) {
@@ -94,7 +98,7 @@ class DisplayingTaskActivity : BaseActivity() {
                     dateView.visibility = if (!loadedTask.dueDate.isNullOrEmpty()) View.VISIBLE else View.GONE
 
                     val waterView = findViewById<TextView>(R.id.displayWaterPoints)
-                    if (loadedTask.waterPoints != null && loadedTask.waterPoints > 0) {
+                    if (loadedTask.waterPoints != null && loadedTask.waterPoints!! > 0) {
                         waterView.text = loadedTask.waterPoints.toString()
                         waterView.visibility = View.VISIBLE
                     } else {
@@ -176,6 +180,7 @@ class DisplayingTaskActivity : BaseActivity() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     @SuppressLint("SimpleDateFormat")
     private fun changeTaskDoneUndone(taskId: Int) {
         lifecycleScope.launch(Dispatchers.IO) {
@@ -204,14 +209,24 @@ class DisplayingTaskActivity : BaseActivity() {
                         return@launch
                     }
                 }
+
                 // --- MARK AS DONE --- //
+                val state = db.globalStateDao().getState(1)
+                val pointsToAdd = calculatePointsToAward(loadedTask.dueDate, loadedTask.waterPoints ?: 0)
+                state.waterPoint += pointsToAdd
+
+                loadedTask.waterPoints = 0
                 loadedTask.done = true
                 val formatter = SimpleDateFormat("yyyy-MM-dd")
                 loadedTask.doneDate = formatter.format(Date()).toString()
+
                 db.taskDao().updateTask(loadedTask)
+                db.globalStateDao().updateState(state)
 
                 withContext(Dispatchers.Main) {
-                    playDoneSound()
+                    if (state.soundOn) {
+                        playDoneSound()
+                    }
                     Toast.makeText(this@DisplayingTaskActivity, "Task done!", Toast.LENGTH_SHORT).show()
                     finish()
                 }
@@ -220,6 +235,31 @@ class DisplayingTaskActivity : BaseActivity() {
     }
 
     // --- EXTRAS --- //
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private suspend fun calculatePointsToAward(dueDateStr: String?, originalPoints: Int): Int {
+        if (originalPoints <= 0) return 0
+
+        if (!dueDateStr.isNullOrEmpty()) {
+            try {
+                val dueDate = LocalDate.parse(dueDateStr)
+                val today = LocalDate.now()
+                if (!dueDate.isBefore(today)) {
+                    return originalPoints
+                } else {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(this@DisplayingTaskActivity, "Task overdue! No water drops awarded.", Toast.LENGTH_LONG).show()
+                    }
+                    return 0
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                return originalPoints
+            }
+        }
+        return originalPoints
+    }
+
     private suspend fun validateLocation(taskLatitude: Double, taskLongitude: Double): Boolean {
         val hasPermission = ActivityCompat.checkSelfPermission(this@DisplayingTaskActivity,
             Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
@@ -260,12 +300,11 @@ class DisplayingTaskActivity : BaseActivity() {
     }
 
     private fun playDoneSound() {
-        doneSoundPlayer = MediaPlayer.create(this, R.raw.done_sound_effect)
-        doneSoundPlayer?.setOnCompletionListener {
+        val player = MediaPlayer.create(applicationContext, R.raw.done_sound_effect)
+        player?.setOnCompletionListener {
             it.release()
-            doneSoundPlayer = null
         }
-        doneSoundPlayer?.start()
+        player?.start()
     }
 
     private fun playVoiceNote(path: String, button: TextView) {

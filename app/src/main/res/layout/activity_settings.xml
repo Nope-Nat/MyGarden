@@ -48,7 +48,7 @@
                     app:layout_constraintGuide_percent="0.93" />
 
                 <com.google.android.material.switchmaterial.SwitchMaterial
-                    android:id="@+id/DarkModeSwitch"
+                    android:id="@+id/darkThemeSwitch"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="32dp"
@@ -61,7 +61,7 @@
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <com.google.android.material.switchmaterial.SwitchMaterial
-                    android:id="@+id/SoundSwitch"
+                    android:id="@+id/soundSwitch"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
@@ -71,7 +71,7 @@
                     android:textSize="20sp"
                     app:layout_constraintEnd_toEndOf="@id/guidelineRight"
                     app:layout_constraintStart_toStartOf="@id/guidelineLeft"
-                    app:layout_constraintTop_toBottomOf="@+id/DarkModeSwitch" />
+                    app:layout_constraintTop_toBottomOf="@+id/darkThemeSwitch" />
 
 
                 <com.google.android.material.button.MaterialButton
@@ -89,11 +89,10 @@
                     app:icon="@android:drawable/ic_menu_delete"
                     app:iconGravity="end"
                     app:iconTint="@android:color/holo_red_dark"
-                    app:layout_constraintBottom_toTopOf="@+id/BackButton"
                     app:layout_constraintEnd_toEndOf="@id/guidelineRight"
                     app:layout_constraintHorizontal_bias="0.0"
                     app:layout_constraintStart_toStartOf="@id/guidelineLeft"
-                    app:layout_constraintTop_toBottomOf="@+id/SoundSwitch"
+                    app:layout_constraintTop_toBottomOf="@+id/soundSwitch"
                     app:layout_constraintVertical_bias="0.0" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>

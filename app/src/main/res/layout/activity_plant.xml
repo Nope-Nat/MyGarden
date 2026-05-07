@@ -87,8 +87,8 @@
             android:layout_width="0dp"
             android:layout_height="48dp"
             android:layout_marginTop="32dp"
-            android:max="100"
-            android:progress="60"
+            android:max="3"
+            android:progress="0"
             android:progressTint="?attr/waterColor"
             android:scaleY="3"
             app:layout_constraintBottom_toTopOf="@+id/waterButton"
@@ -107,6 +107,22 @@
             app:layout_constraintEnd_toEndOf="@id/guidelineRight"
             app:layout_constraintStart_toStartOf="@id/guidelineLeft"
             app:layout_constraintTop_toBottomOf="@+id/progressBar" />
+
+        <TextView
+            android:id="@+id/pointsCounter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="punkciki"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="?attr/colorOnSurface"
+            app:drawableStartCompat="@drawable/ic_water_small"
+            android:drawableTint="?attr/colorOnSurface"
+            android:drawablePadding="8dp"
+            app:layout_constraintBottom_toTopOf="@+id/plantText"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/toolbar" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

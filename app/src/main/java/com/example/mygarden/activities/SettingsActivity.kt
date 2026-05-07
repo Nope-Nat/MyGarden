@@ -1,7 +1,6 @@
 package com.example.mygarden.activities
 
 import android.content.Intent
-import android.content.SharedPreferences
 import android.os.Bundle
 import android.widget.Button
 import android.widget.Toast
@@ -12,6 +11,7 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
 import com.example.mygarden.R
 import com.example.mygarden.database.AppDatabase
+import com.example.mygarden.database.GlobalState
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.switchmaterial.SwitchMaterial
@@ -21,7 +21,6 @@ import kotlinx.coroutines.withContext
 import java.io.File
 
 class SettingsActivity : BaseActivity() {
-
     private lateinit var drawerLayout: DrawerLayout
 
     // --- LIFECYCLE --- //
@@ -29,11 +28,9 @@ class SettingsActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
 
-        val sharedPref = getSharedPreferences("Settings", MODE_PRIVATE)
-
         setupDrawerAndToolbar()
-        setupDarkMode(sharedPref)
-        setupSound(sharedPref)
+        setupDarkMode()
+        setupSound()
         setupButtons()
     }
 
@@ -72,40 +69,54 @@ class SettingsActivity : BaseActivity() {
             true
         }
     }
-    private fun setupDarkMode(sharedPref: SharedPreferences) {
-        val themeSwitch: SwitchMaterial = findViewById(R.id.DarkModeSwitch)
-        val editor = sharedPref.edit()
+    private fun setupDarkMode() {
+        val themeSwitch: SwitchMaterial = findViewById(R.id.darkThemeSwitch)
+        val dao = AppDatabase.getDatabase(this).globalStateDao()
 
-        val isDarkModeSaved = sharedPref.getBoolean("dark_mode_key", false)
-        themeSwitch.isChecked = isDarkModeSaved
+        lifecycleScope.launch {
+            val state = withContext(Dispatchers.IO) { dao.getState(1) }
+            val isDarkMode = state.darkTheme
 
-        themeSwitch.setOnCheckedChangeListener { _, isChecked ->
-            editor.putBoolean("dark_mode_key", isChecked).apply()
+            themeSwitch.setOnCheckedChangeListener(null)
+            themeSwitch.isChecked = isDarkMode
 
-            val darkMode = if (isChecked) {
-                AppCompatDelegate.MODE_NIGHT_YES
-            } else {
-                AppCompatDelegate.MODE_NIGHT_NO
-            }
+            themeSwitch.setOnCheckedChangeListener { _, isChecked ->
+                lifecycleScope.launch(Dispatchers.IO) {
+                    val freshState = dao.getState(1)
+                    val updatedState = freshState.copy(darkTheme = isChecked)
+                    dao.updateState(updatedState)
+                }
 
-            if (AppCompatDelegate.getDefaultNightMode() != darkMode) {
-                AppCompatDelegate.setDefaultNightMode(darkMode)
-                val intent = intent
-                finish()
-                startActivity(intent)
-                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+                lifecycleScope.launch(Dispatchers.Main) {
+                    kotlinx.coroutines.delay(150)
+                    if (isChecked) {
+                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+                    } else {
+                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+                    }
+                }
             }
         }
     }
-    private fun setupSound(sharedPref: SharedPreferences) {
-        val soundSwitch: SwitchMaterial = findViewById(R.id.SoundSwitch)
-        val editor = sharedPref.edit()
 
-        val isSoundEnabled = sharedPref.getBoolean("sound_key", true)
-        soundSwitch.isChecked = isSoundEnabled
+    private fun setupSound() {
+        val soundSwitch: SwitchMaterial = findViewById(R.id.soundSwitch)
+        val dao = AppDatabase.getDatabase(this).globalStateDao()
 
-        soundSwitch.setOnCheckedChangeListener { _, isChecked ->
-            editor.putBoolean("sound_key", isChecked).apply()
+        lifecycleScope.launch {
+            val state = withContext(Dispatchers.IO) { dao.getState(1) }
+            val isSoundEnabled = state.soundOn
+
+            soundSwitch.setOnCheckedChangeListener(null)
+            soundSwitch.isChecked = isSoundEnabled
+
+            soundSwitch.setOnCheckedChangeListener { _, isChecked ->
+                lifecycleScope.launch(Dispatchers.IO) {
+                    val freshState = dao.getState(1)
+                    val updatedState = freshState.copy(soundOn = isChecked)
+                    dao.updateState(updatedState)
+                }
+            }
         }
     }
     private fun setupButtons() {
@@ -130,6 +141,7 @@ class SettingsActivity : BaseActivity() {
             clearFiles()
             val db = AppDatabase.getDatabase(this@SettingsActivity)
             db.taskDao().clearTasks()
+            db.globalStateDao().insertState(GlobalState(darkTheme = false, soundOn = true, waterPoint = 0, plantIndex = 0, plantProgress = 0))
             withContext(Dispatchers.Main) {
                 Toast.makeText(this@SettingsActivity, "Data wiped", Toast.LENGTH_SHORT).show()
             }
