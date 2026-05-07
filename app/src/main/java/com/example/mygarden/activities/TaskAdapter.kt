@@ -36,7 +36,7 @@ class TaskAdapter(
             holder.dateText.visibility = View.VISIBLE
         }
         if (task.waterPoints != null) {
-            holder.waterText.text = "\uD83D\uDCA7 "+task.waterPoints.toString()
+            holder.waterText.text = task.waterPoints.toString()
             holder.waterText.visibility = View.VISIBLE
         } else {
             holder.waterText.visibility = View.GONE

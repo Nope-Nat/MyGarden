@@ -92,7 +92,7 @@
                 app:layout_constraintTop_toTopOf="parent" />
             <TextView
                 android:id="@+id/displayWaterPoints"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:gravity="center"
@@ -101,6 +101,9 @@
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:visibility="gone"
+                app:drawableStartCompat="@drawable/ic_water_small"
+                android:drawableTint="?attr/colorOnSurface"
+                android:drawablePadding="8dp"
                 app:layout_constraintEnd_toEndOf="@id/guidelineRight"
                 app:layout_constraintStart_toStartOf="@id/guidelineLeft"
                 app:layout_constraintTop_toBottomOf="@id/displayTaskDate"/>

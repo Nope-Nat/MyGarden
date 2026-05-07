@@ -5,14 +5,15 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import android.widget.Button
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
+import androidx.appcompat.widget.Toolbar
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
 import com.example.mygarden.R
 import com.example.mygarden.database.AppDatabase
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.navigation.NavigationView
 import com.google.android.material.switchmaterial.SwitchMaterial
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -21,31 +22,56 @@ import java.io.File
 
 class SettingsActivity : BaseActivity() {
 
-    // --- LIFECYCLE --- //
+    private lateinit var drawerLayout: DrawerLayout
 
+    // --- LIFECYCLE --- //
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContentView(R.layout.activity_settings)
 
         val sharedPref = getSharedPreferences("Settings", MODE_PRIVATE)
 
-        setupWindowInsets()
+        setupDrawerAndToolbar()
         setupDarkMode(sharedPref)
         setupSound(sharedPref)
         setupButtons()
     }
 
     // --- SETUP METHODS --- //
+    private fun setupDrawerAndToolbar() {
+        val toolbar: Toolbar = findViewById(R.id.toolbar)
+        setSupportActionBar(toolbar)
 
-    private fun setupWindowInsets() {
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
+        drawerLayout = findViewById(R.id.drawer_layout)
+        val navView: NavigationView = findViewById(R.id.nav_view)
+
+        val toggle = ActionBarDrawerToggle(
+            this, drawerLayout, toolbar,
+            R.string.navigation_drawer_open, R.string.navigation_drawer_close
+        )
+        drawerLayout.addDrawerListener(toggle)
+        toggle.syncState()
+
+        navView.setNavigationItemSelectedListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.nav_add_task -> {
+                    startActivity(Intent(this, AddingTaskActivity::class.java))
+                }
+                R.id.nav_settings -> {}
+                R.id.nav_history -> {
+                    startActivity(Intent(this, HistoryActivity::class.java))
+                }
+                R.id.nav_main -> {
+                    startActivity(Intent(this, MainActivity::class.java))
+                }
+                R.id.nav_plant -> {
+                    startActivity(Intent(this, PlantActivity::class.java))
+                }
+            }
+            drawerLayout.closeDrawers()
+            true
         }
     }
-
     private fun setupDarkMode(sharedPref: SharedPreferences) {
         val themeSwitch: SwitchMaterial = findViewById(R.id.DarkModeSwitch)
         val editor = sharedPref.edit()
@@ -71,7 +97,6 @@ class SettingsActivity : BaseActivity() {
             }
         }
     }
-
     private fun setupSound(sharedPref: SharedPreferences) {
         val soundSwitch: SwitchMaterial = findViewById(R.id.SoundSwitch)
         val editor = sharedPref.edit()
@@ -83,14 +108,7 @@ class SettingsActivity : BaseActivity() {
             editor.putBoolean("sound_key", isChecked).apply()
         }
     }
-
     private fun setupButtons() {
-        // --- Back Button --- //
-        findViewById<Button>(R.id.BackButton).setOnClickListener {
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
-        }
-
         // --- Clearing Database --- //
         findViewById<Button>(R.id.WipeDataButton).setOnClickListener {
             MaterialAlertDialogBuilder(this)
@@ -107,7 +125,6 @@ class SettingsActivity : BaseActivity() {
     }
 
     // --- LOGIC METHODS --- //
-
     private fun clearAllData() {
         lifecycleScope.launch(Dispatchers.IO) {
             clearFiles()
@@ -118,7 +135,6 @@ class SettingsActivity : BaseActivity() {
             }
         }
     }
-
     private fun clearFiles() {
         try {
             val cameraImagesDir = File(cacheDir, "camera_images")

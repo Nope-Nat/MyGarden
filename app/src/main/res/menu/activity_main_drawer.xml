@@ -6,19 +6,23 @@
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/nav_add_task"
-            android:icon="@android:drawable/ic_menu_add"
+            android:icon="@drawable/ic_add"
             android:title="Add new Task" />
         <item
             android:id="@+id/nav_settings"
-            android:icon="@android:drawable/ic_menu_preferences"
+            android:icon="@drawable/ic_settings"
             android:title="Go to settings" />
         <item
             android:id="@+id/nav_history"
-            android:icon="@android:drawable/ic_menu_recent_history"
+            android:icon="@drawable/ic_history"
             android:title="Go to history"/>
         <item
+            android:id="@+id/nav_plant"
+            android:icon="@drawable/ic_plant"
+            android:title="Visit your plant"/>
+        <item
             android:id="@+id/nav_main"
-            android:icon="@android:drawable/ic_menu_directions"
+            android:icon="@drawable/ic_back"
             android:title="Back to main menu"/>
     </group>
 </menu>

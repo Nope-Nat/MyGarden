@@ -51,6 +51,10 @@
             android:textSize="14sp"
             android:textColor="?attr/colorText"
             android:visibility="gone"
+            app:drawableStartCompat="@drawable/ic_water_small"
+            android:drawableTint="?attr/colorText"
+            android:drawablePadding="4dp"
+            android:gravity="center_vertical"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent" />

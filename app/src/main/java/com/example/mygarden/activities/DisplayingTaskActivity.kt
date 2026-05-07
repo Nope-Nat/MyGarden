@@ -95,7 +95,7 @@ class DisplayingTaskActivity : BaseActivity() {
 
                     val waterView = findViewById<TextView>(R.id.displayWaterPoints)
                     if (loadedTask.waterPoints != null && loadedTask.waterPoints > 0) {
-                        waterView.text = "💧 ${loadedTask.waterPoints}"
+                        waterView.text = loadedTask.waterPoints.toString()
                         waterView.visibility = View.VISIBLE
                     } else {
                         waterView.visibility = View.GONE

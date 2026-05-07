@@ -55,20 +55,17 @@ class HistoryActivity : BaseActivity() {
         navView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.nav_add_task -> {
-                    val intent = Intent(this, AddingTaskActivity::class.java)
-                    startActivity(intent)
+                    startActivity(Intent(this, AddingTaskActivity::class.java))
                 }
                 R.id.nav_settings -> {
-                    val intent = Intent(this, SettingsActivity::class.java)
-                    startActivity(intent)
+                    startActivity(Intent(this, SettingsActivity::class.java))
                 }
-                R.id.nav_history -> {
-                    val intent = Intent(this, HistoryActivity::class.java)
-                    startActivity(intent)
-                }
+                R.id.nav_history -> {}
                 R.id.nav_main -> {
-                    val intent = Intent(this, MainActivity::class.java)
-                    startActivity(intent)
+                    startActivity(Intent(this, MainActivity::class.java))
+                }
+                R.id.nav_plant -> {
+                    startActivity(Intent(this, PlantActivity::class.java))
                 }
             }
             drawerLayout.closeDrawers()

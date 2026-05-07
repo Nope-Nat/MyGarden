@@ -4,7 +4,7 @@
         <!-- Customize your dark theme here. -->
         <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
         <item name="android:windowBackground">@color/dark_brown</item>
-        <item name="colorOnSurface">@color/light_magenta</item>
+        <item name="colorOnSurface">@color/dark_magenta</item>
         <item name="colorPrimary">@color/light_magenta</item>
         <item name="colorText">@color/white</item>
     </style>
