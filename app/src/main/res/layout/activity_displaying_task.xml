@@ -30,6 +30,7 @@
         android:layout_marginBottom="24dp"
         android:text="BACK"
         android:textSize="20sp"
+        android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
@@ -39,8 +40,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="12dp"
-        android:text="CHANGE DONE/UNDONE"
+        android:text="CHANGE STATUS"
         android:textSize="20sp"
+        android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/BackButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
@@ -158,7 +160,6 @@
                 android:textAlignment="center"
                 android:textColor="?attr/colorOnPrimary"
                 android:textSize="18sp"
-                android:textStyle="bold"
                 android:visibility="gone"
                 app:layout_constraintEnd_toEndOf="@id/guidelineRight"
                 app:layout_constraintStart_toStartOf="@id/guidelineLeft"
@@ -187,7 +188,6 @@
                 android:textAlignment="center"
                 android:textColor="?attr/colorOnPrimary"
                 android:textSize="18sp"
-                android:textStyle="bold"
                 android:visibility="gone"
                 app:layout_constraintEnd_toEndOf="@id/guidelineRight"
                 app:layout_constraintStart_toStartOf="@id/guidelineLeft"
@@ -213,15 +213,27 @@
                 android:foreground="?android:attr/selectableItemBackground"
                 android:background="?android:attr/colorPrimary"
                 android:padding="8dp"
-                android:text="Play Voice Note"
+                android:text="Play Voive Note"
                 android:textAlignment="center"
                 android:textColor="?attr/colorOnPrimary"
                 android:textSize="18sp"
-                android:textStyle="bold"
                 android:visibility="gone"
                 app:layout_constraintEnd_toEndOf="@id/guidelineRight"
                 app:layout_constraintStart_toStartOf="@id/guidelineLeft"
                 app:layout_constraintTop_toBottomOf="@id/displayTaskHandwritten" />
+
+            <Button
+                android:id="@+id/DeleteButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:text="DELETE TASK"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:layout_marginTop="16dp"
+                app:layout_constraintTop_toBottomOf="@+id/displayVoiceNoteButton"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>

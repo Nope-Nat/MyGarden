@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.app.DatePickerDialog
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.media.MediaPlayer
@@ -218,6 +219,9 @@ class AddingTaskActivity : AppCompatActivity() {
                 saveTask(name = name, desc = desc, date = date, photo = savedPhotoPath, handwrtt = currentHandwritingPath,
                     addr = address, lat = finalLat, lon = finalLon, water = waterPoints, voice = currentVoicePath)
             }
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
+            finish()
         }
 
         findViewById<Button>(R.id.BackButton).setOnClickListener {

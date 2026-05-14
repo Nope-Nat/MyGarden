@@ -2,15 +2,9 @@
     <color name="white">#FFFFFFFF</color>
     <color name="black">#FF000000</color>
     <color name="beige">#DEBD85</color>
-    <color name="dark_green">#397819</color>
-    <color name="light_green">#4E982A</color>
     <color name="dark_orange">#BD7118</color>
-    <color name="light_orange">#BD9018</color>
-    <color name="yellow">#CBAE25</color>
-    <color name="light_brown">#493921</color>
-    <color name="dark_brown">#2A1E04</color>
-    <color name="dark_magenta">#7C244E</color>
-    <color name="light_magenta">#975172</color>
+    <color name="dark_brown">#31210A</color>
     <color name="light_blue">#6EB2FF</color>
     <color name="dark_blue">#0B305D</color>
+    <color name="dark_green">#2a5a13</color>
 </resources>

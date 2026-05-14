@@ -24,6 +24,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.example.mygarden.R
 import com.example.mygarden.database.AppDatabase
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -76,6 +77,25 @@ class DisplayingTaskActivity : AppCompatActivity() {
             val taskId = intent.getIntExtra("TASK_ID", -1)
             if (taskId != -1) {
                 changeTaskDoneUndone(taskId)
+            }
+        }
+        findViewById<Button>(R.id.DeleteButton).setOnClickListener {
+            val taskId = intent.getIntExtra("TASK_ID", -1)
+            if (taskId != -1) {
+                MaterialAlertDialogBuilder(this)
+                    .setTitle("Confirm Deletion")
+                    .setMessage("Are you sure you want to delete this? This cannot be undone.")
+                    .setNegativeButton("Cancel") { dialog, _ ->
+                        dialog.dismiss()
+                    }
+                    .setPositiveButton("Yes, Wipe") { _, _ ->
+                        lifecycleScope.launch(Dispatchers.IO) {
+                            val db = AppDatabase.getDatabase(this@DisplayingTaskActivity)
+                            db.taskDao().deleteTask(taskId)
+                            finish()
+                        }
+                    }
+                    .show()
             }
         }
     }

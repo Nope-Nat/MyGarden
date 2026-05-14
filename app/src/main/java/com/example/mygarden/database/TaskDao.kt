@@ -1,6 +1,7 @@
 package com.example.mygarden.database
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
@@ -13,18 +14,18 @@ interface TaskDao {
     @Query("""
         SELECT * FROM tasks 
         WHERE done = false 
-        ORDER BY 
+        ORDER BY
             CASE 
                 WHEN dueDate IS NULL OR dueDate = '' THEN 1 
                 ELSE 0 
-        END ASC, waterPoints DESC
+        END ASC, name ASC
     """)
     suspend fun getAllUndoneTasks(): List<Task>
 
     @Query("""
         SELECT * FROM tasks 
         WHERE done = true 
-        ORDER BY doneDate
+        ORDER BY doneDate DESC
     """)
     suspend fun getAllDoneTasks(): List<Task>
 
@@ -36,4 +37,7 @@ interface TaskDao {
 
     @Query ("DELETE FROM tasks")
     suspend fun clearTasks()
+
+    @Query("DELETE FROM tasks WHERE id = :id")
+    suspend fun deleteTask(id: Int)
 }

@@ -47,12 +47,13 @@
             android:textAlignment="center"
             android:textColor="?attr/colorPrimary"
             android:textSize="30sp"
+            android:layout_marginTop="8dp"
             app:layout_constraintVertical_chainStyle="packed"
             app:layout_constraintVertical_bias="0.5"
             app:layout_constraintBottom_toTopOf="@+id/plantName"
             app:layout_constraintEnd_toEndOf="@id/guidelineRight"
             app:layout_constraintStart_toStartOf="@id/guidelineLeft"
-            app:layout_constraintTop_toBottomOf="@+id/toolbar" />
+            app:layout_constraintTop_toBottomOf="@+id/pointsCounter" />
 
         <TextView
             android:id="@+id/plantName"
@@ -119,6 +120,7 @@
             app:drawableStartCompat="@drawable/ic_water_small"
             android:drawableTint="?attr/colorOnSurface"
             android:drawablePadding="8dp"
+            android:layout_marginTop="8dp"
             app:layout_constraintBottom_toTopOf="@+id/plantText"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
