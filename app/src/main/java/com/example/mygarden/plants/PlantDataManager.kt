@@ -14,7 +14,7 @@ class PlantDataManager(private val context: Context) {
     }
     private fun loadDataFromAssets() {
         try {
-            context.assets.open("plants/a.out").bufferedReader().useLines { lines ->
+            context.assets.open("plants/plantList.out").bufferedReader().useLines { lines ->
                 lines.forEach { line ->
                     val parts = line.trim().split(",")
 

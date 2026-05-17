@@ -4,6 +4,7 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.ObjectAnimator
 import android.content.Intent
+import android.media.MediaPlayer
 import android.os.Bundle
 import android.widget.Button
 import android.widget.ImageView
@@ -95,11 +96,15 @@ class PlantActivity : AppCompatActivity() {
                 val dao = db.globalStateDao()
                 val state = withContext(Dispatchers.IO) { dao.getState(1) }
 
-                if (state != null && state.waterPoint > 0) {
+                if (state.waterPoint > 0) {
                     isAnimating = true
 
                     val currentProgress = state.plantProgress
                     val currentIndex = state.plantIndex
+
+                    val sounds = state.soundOn
+                    if (sounds)
+                        playWaterSound()
 
                     val newProgress = currentProgress + 1
                     if (newProgress >= 3) {
@@ -165,5 +170,12 @@ class PlantActivity : AppCompatActivity() {
             val plantName = currentPlant.category.replaceFirstChar { it.uppercase() }
             plantNameTextView.text = "${plantName.uppercase()} - Level ${currentPlant.level}"
         }
+    }
+    private fun playWaterSound() {
+        val player = MediaPlayer.create(applicationContext, R.raw.water_sound_effect)
+        player?.setOnCompletionListener {
+            it.release()
+        }
+        player?.start()
     }
 }

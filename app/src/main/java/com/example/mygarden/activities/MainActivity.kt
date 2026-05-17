@@ -15,6 +15,7 @@ import com.google.android.material.navigation.NavigationView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class MainActivity : AppCompatActivity() {
 
@@ -70,6 +71,11 @@ class MainActivity : AppCompatActivity() {
             }
             drawerLayout.closeDrawers()
             true
+        }
+
+        // --- Adding Task Shortcut --- //
+        findViewById<FloatingActionButton>(R.id.fastAddButton).setOnClickListener {
+            startActivity(Intent(this, AddingTaskActivity::class.java))
         }
     }
 

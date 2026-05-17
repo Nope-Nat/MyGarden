@@ -16,40 +16,57 @@
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
             android:elevation="4dp"
             android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-            app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
         <androidx.constraintlayout.widget.Guideline
             android:id="@+id/guidelineLeft"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            app:layout_constraintGuide_percent="0.07" />
+            app:layout_constraintGuide_percent="0.08" />
 
         <androidx.constraintlayout.widget.Guideline
             android:id="@+id/guidelineRight"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            app:layout_constraintGuide_percent="0.93" />
+            app:layout_constraintGuide_percent="0.92" />
+
+        <!-- Vertical Centering Chain Starts Here -->
+        <TextView
+            android:id="@+id/pointsCounter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:drawablePadding="8dp"
+            android:drawableTint="?attr/colorOnSurface"
+            android:text="punkciki"
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:drawableStartCompat="@drawable/ic_water_small"
+            app:layout_constraintBottom_toTopOf="@+id/plantText"
+            app:layout_constraintEnd_toEndOf="@id/guidelineRight"
+            app:layout_constraintStart_toStartOf="@id/guidelineLeft"
+            app:layout_constraintTop_toBottomOf="@+id/toolbar"
+            app:layout_constraintVertical_chainStyle="packed" />
 
         <TextView
             android:id="@+id/plantText"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
             android:text="The plant you're growing is"
             android:textAlignment="center"
             android:textColor="?attr/colorPrimary"
-            android:textSize="30sp"
-            android:layout_marginTop="8dp"
-            app:layout_constraintVertical_chainStyle="packed"
-            app:layout_constraintVertical_bias="0.5"
+            android:textSize="24sp"
             app:layout_constraintBottom_toTopOf="@+id/plantName"
             app:layout_constraintEnd_toEndOf="@id/guidelineRight"
             app:layout_constraintStart_toStartOf="@id/guidelineLeft"
@@ -63,7 +80,7 @@
             android:text="PUMPKIN"
             android:textAlignment="center"
             android:textColor="?attr/colorOnSurface"
-            android:textSize="35sp"
+            android:textSize="32sp"
             android:textStyle="bold"
             app:layout_constraintBottom_toTopOf="@+id/plantImage"
             app:layout_constraintEnd_toEndOf="@id/guidelineRight"
@@ -72,10 +89,10 @@
 
         <ImageView
             android:id="@+id/plantImage"
-            android:layout_width="170dp"
-            android:layout_height="174dp"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
             android:layout_marginTop="32dp"
-            android:contentDescription="App Logo"
+            android:contentDescription="Plant Image"
             app:layout_constraintBottom_toTopOf="@+id/progressBar"
             app:layout_constraintEnd_toEndOf="@id/guidelineRight"
             app:layout_constraintStart_toStartOf="@id/guidelineLeft"
@@ -86,12 +103,12 @@
             android:id="@+id/progressBar"
             style="?android:attr/progressBarStyleHorizontal"
             android:layout_width="0dp"
-            android:layout_height="48dp"
+            android:layout_height="24dp"
             android:layout_marginTop="32dp"
             android:max="3"
             android:progress="0"
             android:progressTint="?attr/waterColor"
-            android:scaleY="3"
+            android:scaleY="2"
             app:layout_constraintBottom_toTopOf="@+id/waterButton"
             app:layout_constraintEnd_toEndOf="@id/guidelineRight"
             app:layout_constraintStart_toStartOf="@id/guidelineLeft"
@@ -100,31 +117,15 @@
         <Button
             android:id="@+id/waterButton"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="64dp"
             android:layout_marginTop="32dp"
+            android:layout_marginBottom="32dp"
             android:text="WATER"
-            android:textSize="30sp"
+            android:textSize="24sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="@id/guidelineRight"
             app:layout_constraintStart_toStartOf="@id/guidelineLeft"
             app:layout_constraintTop_toBottomOf="@+id/progressBar" />
-
-        <TextView
-            android:id="@+id/pointsCounter"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="punkciki"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:textColor="?attr/colorOnSurface"
-            app:drawableStartCompat="@drawable/ic_water_small"
-            android:drawableTint="?attr/colorOnSurface"
-            android:drawablePadding="8dp"
-            android:layout_marginTop="8dp"
-            app:layout_constraintBottom_toTopOf="@+id/plantText"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/toolbar" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

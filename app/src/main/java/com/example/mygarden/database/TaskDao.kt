@@ -13,12 +13,12 @@ interface TaskDao {
 
     @Query("""
         SELECT * FROM tasks 
-        WHERE done = false 
+        WHERE done =0 
         ORDER BY
             CASE 
                 WHEN dueDate IS NULL OR dueDate = '' THEN 1 
                 ELSE 0 
-        END ASC, name ASC
+            END ASC, dueDate ASC, name ASC
     """)
     suspend fun getAllUndoneTasks(): List<Task>
 

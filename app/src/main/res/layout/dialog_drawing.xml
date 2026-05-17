@@ -40,7 +40,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:minWidth="0dp"
-                app:icon="@drawable/undo_arrow"
+                app:icon="@drawable/ic_undo"
                 app:iconSize="24dp"
                 app:iconPadding="0dp" />
 
@@ -51,7 +51,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:minWidth="0dp"
-                app:icon="@drawable/redo_arrow"
+                app:icon="@drawable/ic_redo"
                 app:iconSize="24dp"
                 app:iconPadding="0dp" />
         </LinearLayout>

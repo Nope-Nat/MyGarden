@@ -256,7 +256,6 @@ class DisplayingTaskActivity : AppCompatActivity() {
     }
 
     // --- EXTRAS --- //
-
     @RequiresApi(Build.VERSION_CODES.O)
     private suspend fun calculatePointsToAward(dueDateStr: String?, originalPoints: Int): Int {
         if (originalPoints <= 0) return 0
