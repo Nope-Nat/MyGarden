@@ -92,6 +92,7 @@
                 app:layout_constraintEnd_toEndOf="@id/guidelineRight"
                 app:layout_constraintStart_toStartOf="@id/guidelineLeft"
                 app:layout_constraintTop_toTopOf="parent" />
+
             <TextView
                 android:id="@+id/displayWaterPoints"
                 android:layout_width="wrap_content"
@@ -110,6 +111,30 @@
                 app:layout_constraintStart_toStartOf="@id/guidelineLeft"
                 app:layout_constraintTop_toBottomOf="@id/displayTaskDate"/>
 
+            <Button
+                android:id="@+id/btnGoToParent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/displayWaterPoints" />
+
+            <Button
+                android:id="@+id/btnViewSubtasks"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/btnGoToParent" />
+
             <TextView
                 android:id="@+id/displayTaskDescription"
                 android:layout_width="0dp"
@@ -122,7 +147,7 @@
                 android:visibility="gone"
                 app:layout_constraintEnd_toEndOf="@id/guidelineRight"
                 app:layout_constraintStart_toStartOf="@id/guidelineLeft"
-                app:layout_constraintTop_toBottomOf="@id/displayWaterPoints" />
+                app:layout_constraintTop_toBottomOf="@id/btnViewSubtasks" />
 
             <TextView
                 android:id="@+id/displayTaskAddress"

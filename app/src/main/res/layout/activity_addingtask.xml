@@ -115,6 +115,20 @@
                 android:dropDownWidth="match_parent"
                 android:hint="Location" />
 
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="Parent task"
+                android:textSize="16sp"
+                android:textColor="?attr/colorPrimary" />
+
+            <Spinner
+                android:id="@+id/TaskParentSpinner"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:layout_marginTop="4dp" />
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

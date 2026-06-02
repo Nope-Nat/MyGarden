@@ -51,6 +51,9 @@ class AddingTaskActivity : AppCompatActivity() {
     private var currentVoicePath: String? = null
     private var isRecording = false
     private var hasRecorded = false
+    // Parent Task
+    private var availableTasks: List<Task> = emptyList()
+    private var selectedParentId: Int? = null
 
     // --- ACTIVITY RESULT LAUNCHERS (PERMISSIONS & INTENTS) --- //
 
@@ -96,6 +99,7 @@ class AddingTaskActivity : AppCompatActivity() {
         setupTouchpad()
         setupMicrophone()
         setupNavigationButtons()
+        setupParentTaskSpinner()
     }
     override fun onStop() {
         super.onStop()
@@ -177,6 +181,30 @@ class AddingTaskActivity : AppCompatActivity() {
             }
         }
     }
+    private fun setupParentTaskSpinner() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            val db = AppDatabase.getDatabase(this@AddingTaskActivity)
+            availableTasks = db.taskDao().getAllUndoneTasks()
+
+            val taskNames = mutableListOf("None")
+            taskNames.addAll(availableTasks.map { it.name })
+
+            withContext(Dispatchers.Main) {
+                val spinner = findViewById<Spinner>(R.id.TaskParentSpinner)
+                val adapter = ArrayAdapter(this@AddingTaskActivity, android.R.layout.simple_spinner_dropdown_item, taskNames)
+                spinner.adapter = adapter
+
+                spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                    override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                        selectedParentId = if (position == 0) null else availableTasks[position - 1].id
+                    }
+                    override fun onNothingSelected(parent: AdapterView<*>?) {
+                        selectedParentId = null
+                    }
+                }
+            }
+        }
+    }
     private fun setupNavigationButtons() {
         val nameInput = findViewById<EditText>(R.id.TaskName)
         val descInput = findViewById<EditText>(R.id.TaskDescription)
@@ -199,7 +227,6 @@ class AddingTaskActivity : AppCompatActivity() {
                 var finalLat = selectedLat
                 var finalLon = selectedLon
 
-                // --- WHAT IF ADDRESS WAS WRITTEN BUT NOT CHOSEN FROM THE PROPOSITIONS? --- //
                 if (address.isNotEmpty() && (finalLat == null || finalLon == null)) {
                     val cached = locationDataMap[address]
                     if (cached != null) {
@@ -217,7 +244,7 @@ class AddingTaskActivity : AppCompatActivity() {
                 val waterPoints = if (seekBar.progress == 0) null else seekBar.progress
 
                 saveTask(name = name, desc = desc, date = date, photo = savedPhotoPath, handwrtt = currentHandwritingPath,
-                    addr = address, lat = finalLat, lon = finalLon, water = waterPoints, voice = currentVoicePath)
+                    addr = address, lat = finalLat, lon = finalLon, water = waterPoints, voice = currentVoicePath, parentId = selectedParentId)
             }
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
@@ -230,9 +257,9 @@ class AddingTaskActivity : AppCompatActivity() {
     }
 
     // --- LOGIC METHODS --- //
-    private fun saveTask(name: String, desc: String, date: String, photo: String?, handwrtt: String?, addr: String, lat: Double?, lon: Double?, water: Int?, voice: String?) {
+    private fun saveTask(name: String, desc: String, date: String, photo: String?, handwrtt: String?, addr: String, lat: Double?, lon: Double?, water: Int?, voice: String?, parentId: Int?) {
         val task = Task(name = name, description = desc, dueDate = date, photo = photo, handwrittenPhoto = handwrtt,
-            address = addr, latitude = lat, longitude = lon, waterPoints = water, voiceNote = voice)
+            address = addr, latitude = lat, longitude = lon, waterPoints = water, voiceNote = voice, parentId = parentId)
 
         lifecycleScope.launch(Dispatchers.IO) {
             try {

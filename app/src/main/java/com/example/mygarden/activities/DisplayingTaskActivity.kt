@@ -2,6 +2,7 @@ package com.example.mygarden.activities
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.icu.text.SimpleDateFormat
 import android.location.Location
@@ -106,6 +107,9 @@ class DisplayingTaskActivity : AppCompatActivity() {
             val db = AppDatabase.getDatabase(this@DisplayingTaskActivity)
             val task = db.taskDao().getTaskById(taskId)
 
+            val parentTask = task?.parentId?.let { db.taskDao().getTaskById(it) }
+            val subtasks = db.taskDao().getSubtasks(taskId)
+
             withContext(Dispatchers.Main) {
                 task?.let { loadedTask ->
                     findViewById<TextView>(R.id.displayTaskName).text = loadedTask.name
@@ -124,6 +128,40 @@ class DisplayingTaskActivity : AppCompatActivity() {
                         waterView.visibility = View.VISIBLE
                     } else {
                         waterView.visibility = View.GONE
+                    }
+
+                    val btnParent = findViewById<Button>(R.id.btnGoToParent)
+                    if (parentTask != null) {
+                        btnParent.visibility = View.VISIBLE
+                        btnParent.text = "PARENT: ${parentTask.name}"
+                        btnParent.setOnClickListener {
+                            val intent = Intent(this@DisplayingTaskActivity, DisplayingTaskActivity::class.java)
+                            intent.putExtra("TASK_ID", parentTask.id)
+                            startActivity(intent)
+                        }
+                    } else {
+                        btnParent.visibility = View.GONE
+                    }
+
+                    val btnSubtasks = findViewById<Button>(R.id.btnViewSubtasks)
+                    if (subtasks.isNotEmpty()) {
+                        btnSubtasks.visibility = View.VISIBLE
+                        btnSubtasks.text = "SUBTASKS (${subtasks.size})"
+                        btnSubtasks.setOnClickListener {
+                            val names = subtasks.map { it.name }.toTypedArray()
+                            MaterialAlertDialogBuilder(this@DisplayingTaskActivity)
+                                .setTitle("Select Subtask")
+                                .setItems(names) { _, which ->
+                                    val selectedSubtask = subtasks[which]
+                                    val intent = Intent(this@DisplayingTaskActivity, DisplayingTaskActivity::class.java)
+                                    intent.putExtra("TASK_ID", selectedSubtask.id)
+                                    startActivity(intent)
+                                }
+                                .setNegativeButton("Cancel", null)
+                                .show()
+                        }
+                    } else {
+                        btnSubtasks.visibility = View.GONE
                     }
 
                     // --- LOCATION --- //
