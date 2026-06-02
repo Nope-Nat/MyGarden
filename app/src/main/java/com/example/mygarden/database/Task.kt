@@ -19,5 +19,6 @@ data class Task(
     val longitude: Double? = null,
     var waterPoints: Int? = null,
     val voiceNote: String? = null,
-    val parentId: Int? = null
+    val parentId: Int? = null,
+    var progress: Int = 0
 )

@@ -13,6 +13,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.SeekBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -25,7 +26,9 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.example.mygarden.R
 import com.example.mygarden.database.AppDatabase
+import com.example.mygarden.database.Task
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -36,6 +39,8 @@ class DisplayingTaskActivity : AppCompatActivity() {
 
     // --- STATE VARIABLES --- //
     private var voiceNotePlayer: MediaPlayer? = null
+    private var currentTask: Task? = null
+    private var isDeleted = false
 
     // --- LIFECYCLE --- //
     @RequiresApi(Build.VERSION_CODES.O)
@@ -57,6 +62,15 @@ class DisplayingTaskActivity : AppCompatActivity() {
         super.onStop()
         voiceNotePlayer?.release()
         voiceNotePlayer = null
+
+        if (!isDeleted) {
+            currentTask?.let { task ->
+                CoroutineScope(Dispatchers.IO).launch {
+                    val db = AppDatabase.getDatabase(this@DisplayingTaskActivity)
+                    db.taskDao().updateTask(task)
+                }
+            }
+        }
     }
 
     // --- SETUP METHODS --- //
@@ -80,6 +94,18 @@ class DisplayingTaskActivity : AppCompatActivity() {
                 changeTaskDoneUndone(taskId)
             }
         }
+
+        // NOWY KOD DO EDYCJI
+        findViewById<Button>(R.id.EditButton).setOnClickListener {
+            val taskId = intent.getIntExtra("TASK_ID", -1)
+            if (taskId != -1) {
+                val editIntent = Intent(this, AddingTaskActivity::class.java)
+                editIntent.putExtra("EDIT_TASK_ID", taskId)
+                startActivity(editIntent)
+                finish()
+            }
+        }
+
         findViewById<Button>(R.id.DeleteButton).setOnClickListener {
             val taskId = intent.getIntExtra("TASK_ID", -1)
             if (taskId != -1) {
@@ -90,10 +116,13 @@ class DisplayingTaskActivity : AppCompatActivity() {
                         dialog.dismiss()
                     }
                     .setPositiveButton("Yes, Wipe") { _, _ ->
+                        isDeleted = true
                         lifecycleScope.launch(Dispatchers.IO) {
                             val db = AppDatabase.getDatabase(this@DisplayingTaskActivity)
                             db.taskDao().deleteTask(taskId)
-                            finish()
+                            withContext(Dispatchers.Main) {
+                                finish()
+                            }
                         }
                     }
                     .show()
@@ -112,6 +141,8 @@ class DisplayingTaskActivity : AppCompatActivity() {
 
             withContext(Dispatchers.Main) {
                 task?.let { loadedTask ->
+                    currentTask = loadedTask
+
                     findViewById<TextView>(R.id.displayTaskName).text = loadedTask.name
 
                     val descriptionView = findViewById<TextView>(R.id.displayTaskDescription)
@@ -146,7 +177,7 @@ class DisplayingTaskActivity : AppCompatActivity() {
                     val btnSubtasks = findViewById<Button>(R.id.btnViewSubtasks)
                     if (subtasks.isNotEmpty()) {
                         btnSubtasks.visibility = View.VISIBLE
-                        btnSubtasks.text = "SUBTASKS (${subtasks.size})"
+                        btnSubtasks.text = "SUBTASK (${subtasks.size})"
                         btnSubtasks.setOnClickListener {
                             val names = subtasks.map { it.name }.toTypedArray()
                             MaterialAlertDialogBuilder(this@DisplayingTaskActivity)
@@ -163,6 +194,21 @@ class DisplayingTaskActivity : AppCompatActivity() {
                     } else {
                         btnSubtasks.visibility = View.GONE
                     }
+
+                    val progressHeader = findViewById<TextView>(R.id.displayProgressHeader)
+                    val progressBar = findViewById<SeekBar>(R.id.taskProgressBar)
+
+                    progressBar.progress = loadedTask.progress
+                    progressHeader.text = "Progress: ${loadedTask.progress}%"
+
+                    progressBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                        override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                            progressHeader.text = "Progress: $progress%"
+                            currentTask?.progress = progress
+                        }
+                        override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+                        override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+                    })
 
                     // --- LOCATION --- //
                     val addrView = findViewById<TextView>(R.id.displayTaskAddress)
@@ -244,7 +290,7 @@ class DisplayingTaskActivity : AppCompatActivity() {
     private fun changeTaskDoneUndone(taskId: Int) {
         lifecycleScope.launch(Dispatchers.IO) {
             val db = AppDatabase.getDatabase(this@DisplayingTaskActivity)
-            val task = db.taskDao().getTaskById(taskId)
+            val task = currentTask ?: db.taskDao().getTaskById(taskId)
 
             task?.let { loadedTask ->
                 // --- REVERT TO UNDONE --- //
@@ -279,6 +325,7 @@ class DisplayingTaskActivity : AppCompatActivity() {
                 val formatter = SimpleDateFormat("yyyy-MM-dd")
                 loadedTask.doneDate = formatter.format(Date()).toString()
 
+                loadedTask.progress = 100
                 db.taskDao().updateTask(loadedTask)
                 db.globalStateDao().updateState(state)
 
@@ -342,7 +389,7 @@ class DisplayingTaskActivity : AppCompatActivity() {
             )
             val distanceInMeters = results[0]
 
-            if (distanceInMeters > 50000) {
+            if (distanceInMeters > 250) {
                 withContext(Dispatchers.Main) {
                     Toast.makeText(this@DisplayingTaskActivity, "Too far (${distanceInMeters.toInt()}m), stop lying!", Toast.LENGTH_LONG).show()
                 }

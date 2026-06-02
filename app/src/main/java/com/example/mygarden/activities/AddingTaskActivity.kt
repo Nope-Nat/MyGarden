@@ -55,6 +55,8 @@ class AddingTaskActivity : AppCompatActivity() {
     private var availableTasks: List<Task> = emptyList()
     private var selectedParentId: Int? = null
 
+    private var editingTaskId: Int = -1
+
     // --- ACTIVITY RESULT LAUNCHERS (PERMISSIONS & INTENTS) --- //
 
     private val requestMicPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
@@ -87,6 +89,18 @@ class AddingTaskActivity : AppCompatActivity() {
             photoButton.visibility = View.GONE
         }
     }
+    private val pickImageLauncher = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
+        uri?.let {
+            contentResolver.takePersistableUriPermission(it, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            savedPhotoPath = it.toString()
+            val photoPreview = findViewById<ImageView>(R.id.PhotoPreview)
+            val photoButton = findViewById<Button>(R.id.PhotoButton)
+
+            photoPreview.visibility = View.VISIBLE
+            photoPreview.setImageURI(it)
+            photoButton.visibility = View.GONE
+        }
+    }
 
     // --- LIFECYCLE --- //
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -99,6 +113,11 @@ class AddingTaskActivity : AppCompatActivity() {
         setupTouchpad()
         setupMicrophone()
         setupNavigationButtons()
+
+        editingTaskId = intent.getIntExtra("EDIT_TASK_ID", -1)
+        if (editingTaskId != -1) {
+            loadTaskDataForEdit()
+        }
         setupParentTaskSpinner()
     }
     override fun onStop() {
@@ -160,11 +179,21 @@ class AddingTaskActivity : AppCompatActivity() {
     private fun setupCamera() {
         val photoButton = findViewById<Button>(R.id.PhotoButton)
         photoButton.setOnClickListener {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-                launchCamera()
-            } else {
-                requestCameraPermission.launch(Manifest.permission.CAMERA)
-            }
+            val options = arrayOf("Camera", "Gallery")
+            AlertDialog.Builder(this)
+                .setTitle("Select Image Source")
+                .setItems(options) { _, which ->
+                    if (which == 0) {
+                        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+                            launchCamera()
+                        } else {
+                            requestCameraPermission.launch(Manifest.permission.CAMERA)
+                        }
+                    } else {
+                        pickImageLauncher.launch(arrayOf("image/*"))
+                    }
+                }
+                .show()
         }
     }
     private fun setupTouchpad() {
@@ -193,6 +222,13 @@ class AddingTaskActivity : AppCompatActivity() {
                 val spinner = findViewById<Spinner>(R.id.TaskParentSpinner)
                 val adapter = ArrayAdapter(this@AddingTaskActivity, android.R.layout.simple_spinner_dropdown_item, taskNames)
                 spinner.adapter = adapter
+
+                if (editingTaskId != -1 && selectedParentId != null) {
+                    val parentIndex = availableTasks.indexOfFirst { it.id == selectedParentId }
+                    if (parentIndex != -1) {
+                        spinner.setSelection(parentIndex + 1)
+                    }
+                }
 
                 spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                     override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
@@ -246,9 +282,6 @@ class AddingTaskActivity : AppCompatActivity() {
                 saveTask(name = name, desc = desc, date = date, photo = savedPhotoPath, handwrtt = currentHandwritingPath,
                     addr = address, lat = finalLat, lon = finalLon, water = waterPoints, voice = currentVoicePath, parentId = selectedParentId)
             }
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
-            finish()
         }
 
         findViewById<Button>(R.id.BackButton).setOnClickListener {
@@ -257,16 +290,77 @@ class AddingTaskActivity : AppCompatActivity() {
     }
 
     // --- LOGIC METHODS --- //
-    private fun saveTask(name: String, desc: String, date: String, photo: String?, handwrtt: String?, addr: String, lat: Double?, lon: Double?, water: Int?, voice: String?, parentId: Int?) {
-        val task = Task(name = name, description = desc, dueDate = date, photo = photo, handwrittenPhoto = handwrtt,
-            address = addr, latitude = lat, longitude = lon, waterPoints = water, voiceNote = voice, parentId = parentId)
+    private fun loadTaskDataForEdit() {
+        findViewById<TextView>(R.id.textViewTitle).text = "Edit task"
 
+        lifecycleScope.launch(Dispatchers.IO) {
+            val db = AppDatabase.getDatabase(this@AddingTaskActivity)
+            val taskToEdit = db.taskDao().getTaskById(editingTaskId)
+
+            withContext(Dispatchers.Main) {
+                taskToEdit?.let { task ->
+                    findViewById<EditText>(R.id.TaskName).setText(task.name)
+                    findViewById<EditText>(R.id.TaskDueDate).setText(task.dueDate)
+                    findViewById<EditText>(R.id.TaskDescription).setText(task.description)
+                    findViewById<AutoCompleteTextView>(R.id.TaskLocation).setText(task.address)
+
+                    task.waterPoints?.let { findViewById<SeekBar>(R.id.seekBar).progress = it }
+
+                    selectedLat = task.latitude
+                    selectedLon = task.longitude
+                    selectedParentId = task.parentId
+
+                    savedPhotoPath = task.photo
+                    currentHandwritingPath = task.handwrittenPhoto
+                    currentVoicePath = task.voiceNote
+
+                    if (!savedPhotoPath.isNullOrEmpty()) {
+                        findViewById<ImageView>(R.id.PhotoPreview).apply {
+                            visibility = View.VISIBLE
+                            setImageURI(Uri.parse(savedPhotoPath))
+                        }
+                        findViewById<Button>(R.id.PhotoButton).visibility = View.GONE
+                    }
+                    if (!currentHandwritingPath.isNullOrEmpty()) {
+                        findViewById<ImageView>(R.id.HandwrittenPreview).apply {
+                            visibility = View.VISIBLE
+                            setImageURI(Uri.parse(currentHandwritingPath))
+                        }
+                        findViewById<Button>(R.id.HandwrittenButton).visibility = View.GONE
+                    }
+                    if (!currentVoicePath.isNullOrEmpty()) {
+                        findViewById<Button>(R.id.microphoneButton).text = "PLAY RECORDING"
+                        hasRecorded = true
+                    }
+                }
+            }
+        }
+    }
+
+    // Zmodyfikowana funkcja by działała na insert / update
+    private fun saveTask(name: String, desc: String, date: String, photo: String?, handwrtt: String?, addr: String, lat: Double?, lon: Double?, water: Int?, voice: String?, parentId: Int?) {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val db = AppDatabase.getDatabase(this@AddingTaskActivity)
-                db.taskDao().insertTask(task)
+
+                if (editingTaskId != -1) {
+                    val existingTask = db.taskDao().getTaskById(editingTaskId)
+                    if (existingTask != null) {
+                        val updatedTask = existingTask.copy(name = name, description = desc, dueDate = date, photo = photo, handwrittenPhoto = handwrtt,
+                            address = addr, latitude = lat, longitude = lon, waterPoints = water, voiceNote = voice, parentId = parentId
+                        )
+                        db.taskDao().updateTask(updatedTask)
+                    }
+                } else {
+                    val task = Task(name = name, description = desc, dueDate = date, photo = photo, handwrittenPhoto = handwrtt,
+                        address = addr, latitude = lat, longitude = lon, waterPoints = water, voiceNote = voice, parentId = parentId)
+                    db.taskDao().insertTask(task)
+                }
+
                 withContext(Dispatchers.Main) {
                     Toast.makeText(this@AddingTaskActivity, "Saved!", Toast.LENGTH_SHORT).show()
+                    val intent = Intent(this@AddingTaskActivity, MainActivity::class.java)
+                    startActivity(intent)
                     finish()
                 }
             } catch (e: Exception) {
