@@ -9,6 +9,9 @@
 * microphone, speaker
 * hand drawings
 * light and dark mode
+* sorting
+* editing
+* navigating by subtasks and parenttasks
 
 ## Overview
 ![Main](app/src/main/assets/readme_pictures/overview_main.png)
