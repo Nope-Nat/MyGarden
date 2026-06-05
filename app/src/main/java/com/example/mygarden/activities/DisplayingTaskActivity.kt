@@ -95,7 +95,6 @@ class DisplayingTaskActivity : AppCompatActivity() {
             }
         }
 
-        // NOWY KOD DO EDYCJI
         findViewById<Button>(R.id.EditButton).setOnClickListener {
             val taskId = intent.getIntExtra("TASK_ID", -1)
             if (taskId != -1) {

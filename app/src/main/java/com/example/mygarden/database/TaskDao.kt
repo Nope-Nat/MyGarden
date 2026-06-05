@@ -4,7 +4,9 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.RawQuery
 import androidx.room.Update
+import androidx.sqlite.db.SupportSQLiteQuery
 
 @Dao
 interface TaskDao {
@@ -21,6 +23,9 @@ interface TaskDao {
             END ASC, dueDate ASC, name ASC
     """)
     suspend fun getAllUndoneTasks(): List<Task>
+
+    @RawQuery
+    suspend fun getTasksDynamically(query: SupportSQLiteQuery): List<Task>
 
     @Query("""
         SELECT * FROM tasks 

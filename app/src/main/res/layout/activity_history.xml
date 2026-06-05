@@ -57,17 +57,35 @@
             </androidx.core.widget.NestedScrollView>
         </LinearLayout>
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fastAddButton"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|end"
             android:layout_margin="16dp"
-            android:clickable="true"
-            android:focusable="true"
-            android:backgroundTint="?attr/colorOnSurface"
-            app:tint="?attr/colorPrimary"
-            app:srcCompat="@android:drawable/ic_menu_add" />
+            android:orientation="vertical"
+            android:gravity="end">
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/sortButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:backgroundTint="?attr/colorOnSurface"
+                app:tint="?attr/colorPrimary"
+                app:srcCompat="@android:drawable/ic_menu_sort_by_size" />
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fastAddButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:clickable="true"
+                android:focusable="true"
+                android:backgroundTint="?attr/colorOnSurface"
+                app:tint="?attr/colorPrimary"
+                app:srcCompat="@android:drawable/ic_menu_add" />
+
+        </LinearLayout>
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

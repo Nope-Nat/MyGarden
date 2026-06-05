@@ -337,7 +337,6 @@ class AddingTaskActivity : AppCompatActivity() {
         }
     }
 
-    // Zmodyfikowana funkcja by działała na insert / update
     private fun saveTask(name: String, desc: String, date: String, photo: String?, handwrtt: String?, addr: String, lat: Double?, lon: Double?, water: Int?, voice: String?, parentId: Int?) {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
